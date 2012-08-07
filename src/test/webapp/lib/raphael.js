@@ -1,0 +1,3 @@
+mjs.lib = {
+    name:  "Raphael"
+}

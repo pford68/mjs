@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Testing Object.create</title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="js/mjs.js" data-jspath="js" data-debugEnabled="true"></script>
+</head>
+<body>
+    <label>Message:  <input type="text" id="text" size="25" /></label>
+    <input type="button" id="btn-start" value="Write" />
+    <input type="button" id="btn-clear" value="Clear" />
+    <input type="button" id="btn-detach" value="Detach" />
+    <input type="button" id="btn-reattach" value="Re-attach" />
+    <div id="result"></div>
+</body>
+<script>
+(function objectCreateTest($){
+    $.module("mjs/browser/test");
+
+    var name = arguments.callee.name;
+    function getName(){ return name; }
+
+    var o = Object.create({
+    }, {
+        src: {
+            get: function(){ return src; },
+            set: function(value){ src = "A-" + value; },
+            //writable: true,       // This property must no be specified at all if get/set are specified.
+            configurable: true,
+            enumerable: true       // Enumerable affects whether the propertu displays in the log:  e.g.,  $.log("The object").log(o).
+        },
+        message: {
+            writable: true,
+            configurable: false,
+            enumerable: true
+        }
+    });
+    o.src = "OK";
+    o.message = "Huh?";
+    $.log("The object").log(o);   // Object { src="A-OK", message = "Huh?"}
+
+    $.log("New o").log(Object.create(o));    // Object { src="A-OK", message = "Huh?"}
+    var b = Object.create(o);
+    b.src="WTF?";
+    $.log("Object B, inherits from o").log(b);  // Object { src="A-WTF?", message = "Huh?"}
+
+    $.Exception = Object.create({}, {
+        src: {
+            set: function(value){ src = getName(); },
+            get: function(){ return src; },
+            enumerable: true
+        },
+        message: {
+            set: function(value){ message = ("[" + src + "]" + value ); },
+            get: function(){ return message; },
+            enumerable: true
+        }
+    });
+    $.Exception.src = getName();
+    $.Exception.message = "An Exception occurred.";
+    $.log("Exception object").log($.Exception);
+
+    var t = "WOW!"
+    $.log('objectCreateTest.name/arguments.callee.name').log(objectCreateTest.name + "/" + arguments.callee.name);
+
+    $.log("objectCreateTest.lastModule.scope").log(objectCreateTest.lastModule.scope);
+
+
+})(mjs);
+</script>
+</html>

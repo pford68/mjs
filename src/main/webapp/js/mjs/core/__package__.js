@@ -1,0 +1,9 @@
+(function($){
+    $.require("mjs/core/strings");
+    $.require("mjs/core/arrays");
+    $.require("mjs/core/oop");
+    $.require("mjs/core/StringBuilder");
+    $.require("mjs/core/publish");
+    $.require("mjs/core/aop");
+    $.require("mjs/core/utils");
+})(mjs);

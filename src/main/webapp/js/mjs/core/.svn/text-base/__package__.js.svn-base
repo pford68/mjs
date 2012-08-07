@@ -1,0 +1,13 @@
+(function($){
+    $.require("common/strings");
+    $.require("common/arrays");
+    $.require("common/oop");
+    $.require("common/Hashtable");
+    $.require("common/StringBuilder");
+    $.require("common/net");
+    $.require("common/publish");
+    $.require("common/ui");
+    $.require("common/ajax");
+    $.require("common/aop");
+    $.require("common/interfaces");
+})(jQuery);

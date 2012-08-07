@@ -1,0 +1,81 @@
+describe("interface", function(){
+
+    jQuery.require("common/oop");
+
+    var List, Map, Observable, Iterable, MyClass, ObservableImpl, methods,
+        failCalls = [];
+
+    function fail(msg){
+        failCalls.push(msg);
+    }
+
+    beforeEach(function(){
+        failCalls = [];
+        List = jQuery.Interface('add', 'remove', 'addAll');
+        Map = jQuery.Interface('put', 'putAll', 'remove');
+        Observable = jQuery.Interface('notify', 'changed', 'clearChanged');
+        ObservableImpl = new jQuery.Class({
+            notify: function(){},
+            changed: function(){},
+            clearChanged: function(){}
+        }).implement(Observable);
+        MyClass = new jQuery.Class({});
+        methods = {
+            notify: function(){},
+            changed: function(){},
+            clearChanged: function(){},
+            add: function(){},
+            addAll: function(){},
+            put: function(){},
+            putAll: function(){},
+            remove: function(){}
+        };
+    });
+
+    afterEach(function(){
+        if (failCalls.length > 0){
+            throw new Error(failCalls.pop());
+        }
+    });
+
+    it("List should require add(), remove(), and addAll()", function(){
+        expect(List.methods.add).toBeDefined();
+        expect(List.methods.remove).toBeDefined();
+        expect(List.methods.addAll).toBeDefined();
+    });
+
+    describe("Object.implement()", function(){
+        it("should throw an error immediately if the first argument does not have all of the required methods", function(){
+            try {
+                var c = new MyClass();
+                Object.implement(c, List);
+                fail("We should not have reach this point.");
+            } catch(e){
+
+            }
+        });
+    });
+
+    describe("$.Class.implement()", function(){
+        it("should throw an error immediately during initialization if the instance does not implement the required methods", function(){
+            var MyNextClass = $.Class({
+                toString: function(){ return List.methods.join(",") }
+            }).implement(List);
+            try {
+                var c = new MyNextClass();
+                fail("We should not have reach this point.");
+            } catch(e){
+
+            }
+        });
+
+         it("should NOT throw an error immediately during initialization if the instance implements the required methods", function(){
+            var MyNextClass = $.Class(methods).implement(List);
+            try {
+                var c = new MyNextClass();
+            } catch(e){
+                fail("We should not have reach this point.");
+            }
+        });
+    })
+});

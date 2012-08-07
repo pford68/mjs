@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Testing Log Factory</title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="js/mjs.js" data-jspath="js" data-debugEnabled="true"></script>
+</head>
+<body>
+    <label>Message:  <input type="text" id="text" size="25" /></label>
+    <input type="button" id="btn-start" value="Write" />
+    <input type="button" id="btn-clear" value="Clear" />
+    <input type="button" id="btn-detach" value="Detach" />
+    <input type="button" id="btn-reattach" value="Re-attach" />
+    <div id="result"></div>
+</body>
+<script>
+
+function ClusterFuck(){
+    this.message = "A ClusterFuck occurred";
+    this.name = 'ClusterFuck';
+}
+ClusterFuck.prototype = new Error();
+
+(function loader($){
+    $.config = $.config || {};
+    $.config.log = {
+        pattern: "%d [%M]%C............%m",
+        //pattern: "[%M]%C............%m",
+        firstModule: "INFO",
+        PretendClass: "LOG"
+    };
+
+    $.require("mjs/xp/logging/interfaces");
+    $.require("mjs/xp/aop");
+
+
+    var AlertLogger = {
+        log: function(msg){
+            alert(this.render(msg));
+        }
+    };
+    ['info','warn','debug','error'].forEach(function(item){
+        AlertLogger[item] = function(msg){ this.log(msg); }
+    });
+
+    //$.config.logger = AlertLogger;
+
+    $.require("mjs/xp/logging/LogFactory");
+})(mjs);
+
+
+(function($){
+    var Logger = $.logging.LogFactory.getLogger("firstModule");
+    Logger.log("Log statement");
+
+    function getInfo(){
+        Logger.info("info statement");
+    }
+    getInfo();
+
+    Logger.debug("debug statement");
+    Logger.warn("warning");
+    Logger.error("error statement");
+    Logger.trace("Tracing...");
+
+})(mjs);
+
+(function anotherModule($){
+    var Logger = $.logging.LogFactory.getLogger("PretendClass");
+    Logger.assert(false);
+    Logger.log("log statement");
+    Logger.debug("debug statement");
+    Logger.info("info statement");
+    Logger.warn("warning");
+
+    function test(){
+        Logger.error("About to throw a ClusterFuck");
+        throw new ClusterFuck();
+    }
+
+    try {
+        //Object.finalizes({}, $.logging.ILogger);
+        $.addAdvice("Huh?").before(test)
+    } catch(e){
+        Logger.error(e.name + ":  " + e.message);
+    }
+
+    test();
+})(mjs);
+</script>
+</html>

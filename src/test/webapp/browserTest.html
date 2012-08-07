@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Testing Browser Support</title>
+    <style type="text/css">
+        .notSupported {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div><ul id="result"></ul></div>
+</body>
+<script type="text/javascript">
+    var el = document.getElementById("result");
+    function validate(obj, str){
+        var cssClass = obj != null ? "supported" : "notSupported";
+        el.innerHTML += '<li class="' + cssClass + '">' + str + ":  " +  (obj != null) + "</li>";
+    }
+
+    validate(Object.watch, "Object.watch");
+    validate(Object.bind, "Object.bind");
+    validate(Object.defineProperty, "Object.defineProperty");
+    validate(Object.defineProperties, "Object.defineProperties");
+    validate(Object.preventExtensions, "Object.preventExtensions");
+    validate(Object.isExtensible, "Object.isExtensible");
+    validate(Object.getOwnPropertyDescriptor, "Object.getOwnPropertyDescriptor");
+    validate(Object.create, "Object.create");
+    validate(Object.getOwnPropertyNames, "Object.getOwnPropertyNames");
+    validate(Object.seal, "Object.seal");
+    validate(Object.isSealed, "Object.isSealed");
+    validate(Object.freeze, "Object.freeze");
+    validate(Object.isFrozen, "Object.isFrozen");
+    validate(Object.keys, "Object.keys");
+    validate(WebSocket, "WebSocket");
+    validate(Worker, "Worker");
+    validate(EventSource, "EventSource");
+    validate(sessionStorage, "sessionStorage");
+    validate(localStorage, "localStorage");
+    validate(JSON, "JSON");
+</script>
+</html>

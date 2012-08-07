@@ -1,0 +1,32 @@
+/* === File Prologue ============================================================================
+
+ This file was developed  by Potomac Fusion, Inc. for the RTRG project.
+
+ --- Notes --------------------------------------------------------------------------------------
+
+
+ --- Development history ------------------------------------------------------------------------
+ 6/24/11     Philip Ford
+ Created the file and wrote the initial implementation.
+
+ --- Warning ------------------------------------------------------------------------------------
+ This computer software and information is distributed with "restricted
+ rights." Use, duplication, or disclosure by the Government is subject
+ to restrictions as set forth in subparagraph (c)(1)(ii) of the Rights
+ in Technical Data and Computer Software clause at DFARS 252.227-7013.
+ The Contractor is Potomac Fusion, Inc.,
+ 14130 Sullyfield Circle, Suite E, Chantilly, VA 20151.
+
+
+
+ ================================================================================================ */
+
+/**
+ *
+ * @author Philip Ford
+ */
+
+(function($) {
+
+     $.extend({reverse: { ajax: {}}});
+})(jQuery);

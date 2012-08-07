@@ -1,0 +1,33 @@
+/**
+ *
+ * @author Philip Ford
+ *
+ */
+
+(function($) {
+
+    $.require("common/oop");
+
+    var interfaces = {
+
+        /**
+         * @name Command
+         * @class Implemented by classes that use a command pattern.
+         */
+        Command: $.Interface("execute", "undo"),
+
+        /**
+         * @name Chain
+         * @class Implemented by classes that use a chain of responsibility.
+         */
+        Chain: $.Interface("setSuccessor"),
+
+        /**
+         * @name Iterable
+         * @class Array-like structures and collections.
+         */
+        Iterable: $.Interface("forEach", "size")
+    };
+
+    $.extend($, interfaces);
+})(jQuery);

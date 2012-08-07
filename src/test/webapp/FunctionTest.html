@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Function Prototype Experiments</title>
+    <script type="text/javascript" src="js/mjs.js" data-debugEnabled="true" data-jspath="js"></script>
+</head>
+<body>
+
+</body>
+<script>
+(function($){
+    $.require("mjs/xp/Function");
+
+    function test(value){
+        $_ = function(item){ return item + "!"};
+        alert($_[0]);
+        alert($_[1]);
+        alert($_[2]);
+    }
+
+    function add(value){
+        $_ = function(item){ return item + 2};
+        $.log($_[0]).log($_[1]);
+    }
+
+    test("Woohoo");
+    add(34, 2);
+    test("It works");
+})(mjs);
+</script>
+</html>

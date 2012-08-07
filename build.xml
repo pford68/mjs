@@ -1,0 +1,118 @@
+<project id="mjs" name="mjs" basedir="." default="build-js">
+
+    <!-- ====================================================================================
+
+    DESCRIPTION:  Ant scripts for the JavaScript builds.
+    AUTHOR:  Philip Ford
+    COMMENTS:
+
+    =======================================================================================-->
+
+    <property file="build.properties" />
+
+    <!--
+    <taskdef name="jsdoc"
+             classname="uk.co.darrenhurley.ant.tasks.JsDocToolkit"
+             classpath="${tools.dir}/jsdoctoolkit-ant-task-1.0.2.jar;${rhino.jar}" />
+             -->
+
+    <path id="build.path">
+        <pathelement location="${rhino.jar}" />
+        <fileset dir="${tools.dir}">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+
+    <target name="deploy-js-test"
+            description="For deploying changes and tests to a server, required for anything that uses AJAX.">
+        <delete dir="${test.deploy.dir}/${ant.project.name}-tests" />
+        <mkdir dir="${test.deploy.dir}/${ant.project.name}-tests" />
+        <mkdir dir="${test.deploy.dir}/${ant.project.name}-tests/META-INF" />
+        <mkdir dir="${test.deploy.dir}/${ant.project.name}-tests/WEB-INF" />
+        <mkdir dir="${test.deploy.dir}/${ant.project.name}-tests/WEB-INF/classes" />
+        <mkdir dir="${test.deploy.dir}/${ant.project.name}-tests/WEB-INF/lib" />
+        <copy todir="${test.deploy.dir}/${ant.project.name}-tests/js">
+            <fileset dir="${src.webapp.dir}/js">
+                <exclude name="profiles" />
+                <exclude name="profiles/*" />
+            </fileset>
+            <fileset dir="${test.webapp.dir}/js">
+                <include name="**/*.js" />
+            </fileset>
+        </copy>
+        <copy todir="${test.deploy.dir}/${ant.project.name}-tests/lib">
+            <fileset dir="${test.webapp.dir}/lib">
+                <include name="**/*" />
+            </fileset>
+            <fileset dir="${src.webapp.dir}/lib">
+                <include name="**/*.js" />
+            </fileset>
+        </copy>
+        <copy todir="${test.deploy.dir}/${ant.project.name}-tests/spec">
+            <fileset dir="${test.webapp.dir}/spec">
+                <include name="**/*.js" />
+            </fileset>
+        </copy>
+        <copy todir="${test.deploy.dir}/${ant.project.name}-tests">
+            <fileset dir="${test.webapp.dir}">
+                <include name="**/*.html" />
+                <include name="**/*.jsp" />
+            </fileset>
+        </copy>
+    </target>
+
+
+
+    <target name="merge-js" description="Merges separate .js files into one .js for deployment.">
+        <delete dir="${js.output.dir}" />
+        <mkdir dir="${js.output.dir}" />
+        <java fork="yes"
+               jar="${rhino.jar}"
+               classpathref="build.path"
+               failonerror="false">
+           <arg line="${merge.js} --basedir=${tools.dir} --src=${src.webapp.dir} --out=${js.output.dir} --in=${js.files} --debug=${js.build.debug}"/>
+        </java>
+    </target>
+
+
+    <target name="minify-js">
+        <java fork="true" failonerror="true" jar="${tools.dir}/compiler.jar" classpathref="build.path">
+            <arg line="--js ${js.output.dir}/${js.debug.file}-debug.js --js_output_file ${js.output.dir}/${js.debug.file}-min.js" />
+        </java>
+    </target>
+
+
+    <target name="build-js" depends="merge-js">
+        <script language="JavaScript" src="${js.files}">
+            <![CDATA[
+            for (var i = 0; i < files.length; ++i){
+                var file = files[i].replace(/\.js$/, "");
+                var parts = file.split("/");
+                project.setProperty("js.debug.file", parts.pop());
+                try {
+                    project.executeTarget("minify-js");
+                } catch(e){
+                    print("[jcms-client/minify-js] The build failed:  " + e);
+                    print("Try running the build again.");
+                }
+            }
+            ]]>
+        </script>
+    </target>
+
+
+    <target name="build-js-doc" description="Builds JSDOC documentation for our JavaScript files.">
+        <java fork="true"
+              jar="${jsdoc.jar}"
+              classpathref="build.path"
+              failonerror="false">
+           <arg value="${jsdoc.dir}/app/run.js" />
+           <arg value="${src.webapp.dir}/js/common/" />
+           <arg value="-t=${jsdoc.dir}/templates/jsdoc" />
+           <arg value="-d=${jsdoc.output.dir}" />
+           <arg value="-a" />
+        </java>
+    </target>
+
+</project>

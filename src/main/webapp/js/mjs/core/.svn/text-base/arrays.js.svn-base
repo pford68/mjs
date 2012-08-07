@@ -1,0 +1,242 @@
+(function($)
+{
+    /**
+     * Custom array functions as well as native array functions that may or may not be supported
+     * by the current browser.
+     *
+     * Many of these are copied from MDC Array functions: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/
+     * The exceptions are copy and contains.
+     * 
+     * @author Philip Ford
+     */
+
+    // TODO:  Is this method of adding missing functions truly more efficient than usual methods?
+
+    var m = {
+        /**
+         * Copies the contents of the associated array to the specified array.
+         * @param {array} a The array to which to copy indices
+         * @param {integer} [start] The index at which to start copying indices
+         * @param {integer} [count] The number of elements to copy, including the one at index "start"
+         * @scope Array.prototype
+         */
+        copy: function(a, start, count)
+        {
+            if (arguments.length == 0) return this.concat([]);
+
+            var i, j = 0,
+                    _start = (start != null ? start : 0),
+                    _count = (count != null ? _start + count - 1 : this.length - 1);
+            $.log(_start + ":" + _count);
+            for (i = _start; i <= _count; ++i)
+            {
+                a[j] = this[i];
+                ++j;
+            }
+        },
+
+        /**
+         * Same function as the native Array.prototype.splice.  For use in browsers that don't support the native function.
+         * @param {integer} startIndex The index at which to start the replacement/deletion/assertion.
+         * @param {integer} deleteNumber  The number of items to delete/replace, starting with and including the element at startIndex, in the array.         *
+         * @scope Array.prototype
+         */
+        splice: function(startIndex, deleteNumber)
+        {
+            if (typeof console != "undefined" && console.log) console.log("[Array.prototype.splice] Using pfi's splice");
+            var i, len, count = 0, count2 = 0, copy = [];
+            if (isNaN(startIndex))
+            {
+                throw new SyntaxError("[Array.splice] startIndex must be a number");
+            }
+            else if (isNaN(deleteNumber))
+            {
+                throw new SyntaxError("[Array.splice] deleteNumber must be a number");
+            }
+            else if (deleteNumber > this.length || startIndex + deleteNumber > this.length)
+                {
+                    deleteNumber = this.length - startIndex;
+                }
+                else if (arguments.length > 2)
+                    {
+                        this.copy(copy);
+                        for (i = 2, len = arguments.length; i < len; ++i)
+                        {
+                            this[startIndex + count] = arguments[i];
+                            count++;
+                        }
+                        if (deleteNumber <= 0)
+                        {
+                            for (i = startIndex, len = copy.length; i < len; ++i)
+                            {
+                                this[i + count] = copy[startIndex + count2];
+                                count2++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (i = startIndex, len = this.length; i < len; i++)
+                        {
+                            this[i] = this[i + deleteNumber];
+                        }
+                        this.length -= deleteNumber;
+                    }
+        },
+
+
+        /**
+         * @param item
+         * @param startIndex
+         */
+        indexOf: function(item, startIndex)
+        {
+             var len = this.length >>> 0, from = startIndex || 0;
+
+             from = (from < 0) ? Math.ceil(from) : Math.floor(from);
+             if (from < 0)
+               from += len;
+
+             for (; from < len; from++)
+             {
+               if (from in this && this[from] === item)
+                 return from;
+             }
+             return -1;
+        },
+
+
+        /**
+         * 
+         * @param item
+         * @param startIndex
+         */
+        lastIndexOf: function(item, startIndex)
+        {
+            var len = this.length;
+            if (isNaN(startIndex)) {
+                startIndex = len - 1;
+            } else {
+                startIndex = (startIndex < 0) ? Math.ceil(startIndex) : Math.floor(startIndex);
+                if (startIndex < 0) startIndex += len;
+                else if (startIndex >= len) startIndex = len - 1;
+            }
+
+            for (; startIndex > -1; startIndex--) {
+                if (startIndex in this && this[startIndex] === item)
+                return startIndex;
+            }
+            return -1;
+        },
+
+
+        /**
+         * @param func
+         * @param thisVal optional Object scope for the function.
+         */
+        forEach: function(func, thisVal)
+        {
+            var i, len = this.length;
+            for (i = 0; i < len; i++)
+                func.call(thisVal, this[i], i, this);
+        },
+
+
+        /**
+         * @param func
+         * @param thisVal optional Object scope for the function.
+         */
+        map: function(func, thisVal)
+        {
+            var i, len = this.length, ret = [len];
+            for (i = 0; i < len; i++)
+                ret[i] = func.call(thisVal, this[i], i, this);
+            return ret;
+        },
+
+        /**
+         * @param func
+         * @param thisVal optional Object scope for the function.
+         */
+        filter: function(func, thisVal)
+        {
+            var i, val, len = this.length, ret = [];
+            for (i = 0; i < len; i++)
+            {
+                val = this[i];
+                if (func.call(thisVal, val, i, this))
+                    ret[ret.length] = val;
+            }
+            return ret;
+        },
+
+        /**
+         * @param func
+         * @param thisVal optional Object scope for the function.
+         */
+        every: function(func, thisVal)
+        {
+            var i, len = this.length;
+            for (i = 0; i < len; i++)
+                if (!func.call(thisVal, this[i], i, this))
+                    return false;
+            return true;
+        },
+
+        /**
+         * @param func
+         * @param thisVal optional Object scope for the function.
+         */
+        some: function(func, thisVal)
+        {
+            var i, len = this.length;
+            for (i = 0; i < len; i++)
+                if (func.call(thisVal, this[i], i, this))
+                    return true;
+            return false;
+        },
+
+        contains: function(value)
+        {
+            for (var i = 0, len = this.length; i < len; ++i)
+            {
+                if (this[i] === value) return true;
+            }
+            return false;
+        },
+
+
+        /**
+         * "obj" is a Map (an Object) whose keys match indicies in the array, extending or chaining the objects assigned
+         * to those indicies.
+         *
+         * @param obj
+         */
+        extend: function(obj){
+            if (obj) {
+                var i, item;
+                for (i in obj)
+                {
+                    item = this[i];
+                    if (item) {
+                        $.extend(this[i], obj[i]);
+                    }
+                }
+            }
+            return this;
+        },
+
+        /**
+         * This function exists largely so that clients can use arrays without having to know whether
+         * they are dealing with arrays.  Clients could test whether the array implements an interface
+         * that requires size(), instead of whether the object involved is an array.  This permits the
+         * clients to use array-like structures in addition to arrays.
+         */
+        size: function(){
+            return this.length;
+        }
+
+    };
+
+    $.augment(Array.prototype, m);
+})(jQuery);

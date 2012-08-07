@@ -1,0 +1,113 @@
+/**
+ *
+ * @author Philip Ford
+ */
+(function($) {
+
+    var methods = {
+        /**
+         *
+         * @param c
+         */
+		endsWith: function(c){
+			var start = this.length - c.length;
+			return (c === this.substr(start, c.length));
+		}.declare("endsWith", String.prototype)
+         .addException("The first argument must be a string.", function(c){
+            return $.isString(c);
+        }),
+
+        /**
+         *
+         * @param c
+         */
+		startsWith: function(c){
+			return (c === this.substr(0, c.length));
+		}.declare("startsWith", String.prototype)
+         .addException("The first argument must be a string.", function(c){
+            return $.isString(c);
+        }),
+
+        /**
+         *
+         */
+        capitalize: function(){
+            var str = this.toLowerCase();
+            return str.charAt(0).toUpperCase() + str.substring(1);
+        },
+
+        /**
+         *
+         */
+        uncapitalize: function(){
+            return this.charAt(0).toUpperCase() + this.substring(1);
+        },
+
+        /**
+         *
+         */
+        trim: function(){ return this.replace(/^\s\s*/, '').replace(/\s\s*$/, ''); },
+        trimLeft: function(){ return this.replace(/^\s+/g, ""); },
+        trimRight: function() { return this.replace(/\s+$/g, ""); },
+
+        /**
+         *
+         * @param args
+         */
+		replaceArgs: function(args){
+			if (args == null || args.length == 0) return;
+			var str = this + "", re, i, len;
+
+			for (i = 0, len = args.length; i < len; i++){
+				re = new RegExp("\\{" + i + "\\}", "gi");
+				str = str.replace(re, args[i]);
+			}
+
+			return str;
+		},
+
+        /**
+         *
+         * @param args
+         */
+        applyTemplate: function(args) {
+            if (args == null) return;
+            var str = this + "", re, i;
+            for (i in args) {
+                re = new RegExp("\\{" + i + "\\}", "gi");
+                str = str.replace(re, args[i]);
+            }
+            return str;
+        },
+
+        /**
+         * Requires spaces between intended syllables
+         */
+        toCamelCase: function(){
+            var i, len, s, result = [], instance = this, syllables = instance.split(/\s+/);
+            for (i = 0, len = syllables.length; i < len; ++i){
+                if (i > 0) s = syllables[i].capitalize();
+                else s = syllables[i].toLowerCase();
+                result.push(s);
+            }
+            return result.join("");
+        },
+
+        /**
+         *
+         * @param str
+         */
+        contains: function(str) {
+            return this.indexOf(str) != -1;
+        },
+
+        equalsIgnoreCase: function(value){
+            if (!$.isString(value)) return false;
+            return this.toLowerCase() == value.toLowerCase();
+        }
+        
+    };
+
+    $.augment(String.prototype, methods);
+    String.prototype.namespace = "String.prototype";
+})(jQuery);

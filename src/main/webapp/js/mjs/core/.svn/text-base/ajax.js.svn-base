@@ -1,0 +1,211 @@
+/* === File Prologue ============================================================================
+
+ This file was developed  by Potomac Fusion, Inc. for the RTRG project.
+
+ --- Notes --------------------------------------------------------------------------------------
+
+
+ --- Development history ------------------------------------------------------------------------
+ 6/23/11     Philip Ford
+ Created the file and wrote the initial implementation.
+
+ --- Warning ------------------------------------------------------------------------------------
+ This computer software and information is distributed with "restricted
+ rights." Use, duplication, or disclosure by the Government is subject
+ to restrictions as set forth in subparagraph (c)(1)(ii) of the Rights
+ in Technical Data and Computer Software clause at DFARS 252.227-7013.
+ The Contractor is Potomac Fusion, Inc.,
+ 14130 Sullyfield Circle, Suite E, Chantilly, VA 20151.
+
+
+
+ ================================================================================================ */
+
+/**
+ *
+ * @author Philip Ford
+ */
+
+(function($) {
+
+    $.require("common/ui");
+
+    var $config = $.config,
+        $http,
+        xssFrame,
+        $public;
+
+    function getFunction(f) {
+        return f || function() {}
+    }
+
+    function createIFrame(src) {
+        src = src || (lib.replace(/js$/, "") + "/iframe_src.html");
+        var $node = $('<iframe id="rtrg-xss-frame" name="rtrg-xss-frame" src="' +
+                src + '" data-defaultSrc="' +
+                src + '" height="1" width="1" style="visibility: hidden"></iframe>');
+        $(document).append($node);
+        return $node[0];
+    }
+
+    $http = {
+        queue: [],
+
+        next: function(args) {
+            $.log("next");
+            $http.queue.shift();  // Remove the current request.
+            if ($http.queue.length > 0) {
+                $http.queue[0](args);   // Execute the next request, if any.
+            }
+        }
+    };
+
+
+
+    $public = {
+           /**
+         * A wrapper for the request method of whatever AJAX library that we use.  The default HTTP method is POST.
+         *
+         * Supported HTTP methods include "GET", "POST", "PUT", "DELETE," and "JSONP."
+         *
+         * @param args
+         *
+         * TODO:  move to an "ajax.js' file.  Doing so is not trivial, however, since this function uses private members in jcms.js.
+         */
+        request: function(args) {
+            if (!args.url) {
+                $.error("$.request", "A url is required.");
+            }
+
+            if (args.xss === true) {
+                if (!xssFrame) {
+                    xssFrame = createIFrame(args.frameSrc);
+                }
+                args.params = args.params || {};
+                args.context = xssFrame;
+                if (args.onComplete) {
+                    var c = function(e) {
+                        args.onComplete(Ext.decode(e.data), e);
+                        xssFrame.src = xssFrame.getAttribute("data-defaultSrc");
+                    };
+                    // TODO:  as it stands, all message listeners will be notified by every postMessage call.
+                    // And I don't believe that we want that.  We could fix this by removing the listener at
+                    // the end of function c above.  The origin could be used, but what if messages intended for
+                    // different listeners all come from the same origin?  The message event's source, which is
+                    // a Window object, may have url information that listeners can use to decide whether to accept
+                    // a posted message--thus, subscribe to a topic, in a sense.
+                    if (window.addEventListener) {
+                        window.addEventListener("message", c, true)
+                    } else {
+                        window.onmessage = c;
+                    }
+                }
+                $public.createForm(args).submit();
+                return;
+            }
+
+
+            // Wrap the success handler in common feedback handling
+            if (args.success) {
+                var f = args.success;
+                args.success = function(response) {
+                    if (!args.contentType || args.contentType == 'text/json') {
+                        if (response && response.responseText) response = Ext.decode(response.responseText);
+                    }
+                    f(response);
+                    if (args.successMsg) {
+                        // We are getting "d.tools.close" errors in some contexts
+                        try {
+                            $.showDialog({
+                                title: "Status",
+                                msg: (args.successMsg),
+                                icon: "Info",
+                                buttons: ["OK"]
+                            });
+                        } catch(e) {
+                            alert(args.successMsg)
+                        }
+                    }
+                }
+            }
+            // Validation
+            if ($public.isFunction(args.assertion) && !args.assertion()) {
+                // We are getting "d.tools.close" errors in some contexts
+                if (args.errorMsg) {    // PF (2010/08/18) Removed default error msg: if none is set, I am rendering the error elsewhere.
+                    try {
+                        $.errorDialog({
+                            title: "Validation Error",
+                            msg: args.errorMsg,
+                            icon: "Error",
+                            buttons: ["OK"]
+                        });
+                    } catch(e) {
+                        alert(args.errorMsg)
+                    }
+                }
+                return;
+            }
+
+            $.augment(args, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": 'application/json',
+                    accept: 'application/json'
+                },
+                failure: function(response) {
+                    var errorMsg = "Please notify your system administrator.";
+                    try {
+                        $public.log(response);
+                        $.alert("An error occurred", errorMsg);
+                    } catch (e) {
+                        alert(errorMsg);
+                    }
+                }
+            });
+
+            if (args.queue) {
+                var $success = getFunction(args.success),
+                    $failure = getFunction(args.failure);
+                args.success = function(response) {
+                    $success(response);
+                    $http.next(args);
+                };
+                args.failure = function(response) {
+                    $failure(response);
+                    $http.next(args);
+                };
+                $http.queue.push(function() {
+                    $.ajax(args)
+                });
+                // Why queue.length == 1 instead of queue.length > 0? We have to start the queue,
+                // but we don't want to call first item every time $.request() is called with queue == true.
+                if ($http.queue.length == 1) {
+                    $http.queue[0]();
+                }
+            } else {
+                $.ajax(args);
+            }
+        },
+
+
+        createForm: function(args) {
+            var node, params, field, $doc;
+            $doc = args.context ? args.context.contentWindow.document : window.document;
+            node = $doc.createElement("form");
+            node.action = args.url;
+            node.method = args.method || 'POST';
+            params = args.params;
+            for (var i in params) {
+                field = $doc.createElement("input");
+                field.type = "hidden";
+                field.name = i;
+                field.value = params[i];
+                node.appendChild(field);
+            }
+            $doc.getElementsByTagName("body")[0].appendChild(node);
+            return node;
+        }
+    };
+
+    $.extend($public);
+})(jQuery);

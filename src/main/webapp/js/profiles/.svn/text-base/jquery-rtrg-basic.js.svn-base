@@ -1,0 +1,15 @@
+/**
+ *  Includes only the most basic collection of files, in my humble opinion from monterey-js--excluding
+ *  common/ajax.js among others.
+ *
+ *  @author Philip Ford
+ */
+(function($){
+    $.require("common/strings");
+    $.require("common/arrays");
+    $.require("common/StringBuilder");
+    $.require("common/oop");
+    $.require("common/aop");
+    $.require("common/publish");
+    $.require("common/net");
+})(jQuery);

@@ -1,0 +1,3 @@
+describe("Ajax functions", function(){
+
+});

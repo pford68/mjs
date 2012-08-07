@@ -1,0 +1,24 @@
+/**
+ * Paths are relative to jsroot by default
+ */
+var O4Common_dir = "../o4core/O4Common/src/main/webapp";
+
+dependencies = [
+    { path: "lib/jquery-1.2.6.js", root: webapp_root },
+    { path: "lib/ext/adapter/ext/ext-base.js", root: O4Common_dir},
+    { path: "lib/ext/ext-all.js", root: O4Common_dir },
+    { path: "rtrgConfig.js", addToBuild: true, register: false },
+    { path: "jquery-rtrg.js", addToBuild: true, register: false  },
+    "common/strings.js",   // For use in the overriding version of jQuery.require().
+    "common/arrays.js"     // Used in merge()
+];
+
+
+
+
+
+
+
+
+
+

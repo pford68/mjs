@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Testing Events</title>
+</head>
+<body>
+    <label>Message:  <input type="text" id="text" size="25" /></label>
+    <input type="button" id="btn-start" value="Write" />
+    <input type="button" id="btn-clear" value="Clear" />
+    <input type="button" id="btn-detach" value="Detach" />
+    <input type="button" id="btn-reattach" value="Re-attach" />
+    <div id="result"></div>
+</body>
+<script type="text/javascript" src="js/mjs.js" data-jspath="js" data-debugEnabled="true"></script>
+<script>
+(function($){
+    $.require("mjs/core/oop");
+    $.require("mjs/core/events");
+
+    var text = document.getElementById("text");
+    var Renderer = $.Class({
+        initialize: function(id){
+            this.renderTo = document.getElementById(id);
+        },
+        render: function(){
+            this.renderTo.innerHTML = text.value;
+        }
+    });
+
+    var r = new Renderer("result");
+
+    var renderListener = $.addListener({ src: "btn-start", evt: 'click', execute: "render", scope: r });
+    $.addListener({ src: "btn-clear", evt: 'click', execute: function(){
+        document.getElementById("result").innerHTML = "";
+        text.value = "";
+    } });
+    $.addListener({ src: "btn-detach", evt: 'click', execute: function(){ mjs.removeListener(renderListener) } });
+    $.addListener({ src: document.getElementById("btn-reattach"), evt: 'click', execute: function(){ mjs.addListener(renderListener) }});
+
+})(mjs);
+</script>
+</html>

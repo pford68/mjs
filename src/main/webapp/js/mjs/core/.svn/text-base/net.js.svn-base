@@ -1,0 +1,151 @@
+/* === File Prologue ============================================================================
+
+ This file was developed  by Potomac Fusion, Inc. for the JCMS project.
+
+ --- Notes --------------------------------------------------------------------------------------
+ Anything relevant about the items in this file, including document
+ references, assumptions, constraints, restrictions, abnormal termination
+ conditions, etc.
+
+
+ --- Development history -----------------------------------------------------------------------
+ 3/23/11     Philip Ford
+ Created the file and wrote the initial implementation.
+
+ --- Warning -----------------------------------------------------------------------------------
+ This computer software and information is distributed with "restricted
+ rights." Use, duplication, or disclosure by the Government is subject
+ to restrictions as set forth in subparagraph (c)(1)(ii) of the Rights
+ in Technical Data and Computer Software clause at DFARS 252.227-7013.
+ The Contractor is Potomac Fusion, Inc.,
+ 14130 Sullyfield Circle, Suite E, Chantilly, VA 20151.
+
+
+
+ ================================================================================================ */
+
+/**
+ *
+ * @author Philip Ford
+ */
+
+(function($) {
+
+    $.require("common/strings");
+    $.require("common/arrays");
+
+    var $public,
+        $re,
+        $config = $.config,
+        defaults = {
+            format: "{protocol}://{hostname}{port}/{context}/{pathinfo}/{file}{search}"
+        };
+
+    $re = {
+        queryStringStart: /^\?/,
+        slashes: /\//g,
+        doubleSlashes: /\/{2,}/g,
+        protocolClose: /:\//,
+        fullProtocolClose: /:\/\//,
+        extension: /\.[a-zA-Z]{2,6}$/
+    };
+
+    function stripDblSlashes(url){
+        return url.replace($re.doubleSlashes, "/").replace($re.protocolClose, "://");
+    }
+
+    $public = {
+        getCurrentUrl: function(){
+            return window.location.href;
+        },
+        getDomain: function(options){
+            return $public.buildUrl($.augment({ file: "" }, options));
+        },
+        buildUrl: function(options){
+            var location, href, format;
+            options = options || {};
+            format = options.format || (defaults.format + '');
+            href = options.href || options.url || window.location.href;
+            location = $.override($public.parseUrl(href), options);
+            location.file = location.file.replace(/^\/+/, "");
+            location.port = location.port ? ":" + location.port : "";
+            return stripDblSlashes(format.applyTemplate(location));
+        },
+        getContextPath: function(url){
+            var path = $public.parseUrl(url);
+            return [ path.context, path.pathinfo ].join("/");
+        },
+        getContext: function(url){
+            return $public.parseUrl(url).context;
+        },
+        redirect: function(url, options){
+            options = options || {};
+            (options.scope || window).location = stripDblSlashes(url);
+        },
+        exit: function(){
+            window.location = $.buildUrl({ file: $config.home || '' });
+        },
+        getQueryString: function(url){
+            var location = url ? $public.parseUrl(url) : window.location;
+            return location.search.replace($re.queryStringStart, "");
+        },
+
+        /**
+         * <p>Parses a url into an object with the following properties:
+         *     <ul>
+         *          <li>protocol:  does <b>not</b> end with a colon</li>
+         *          <li>hostname</li>
+         *          <li>port:  defaults to 80</li>
+         *          <li>file:  either the file name (plus extension) in the url, or null if no file name exists</li>
+         *          <li>context:  the URL sections immediately following the host (and port), or null if no such section exists</li>
+         *          <li>pathinfo:  the sections of the path between the context and the file.  If no such sections exist, <b> it is an empty string.</b></li>
+         *          <li>query:  the query string, if any, or null</li>
+         *          <li>search:  either "?" + the querystring (like location.search) or an <b>empty string</b></li>
+         *     </ul>
+         * </p>
+         * @param url
+         */
+        parseUrl: function(url){
+            // While this implementation seemingly has a few more steps than using a regular expression,
+            // fixing the regular expression result to get the port number, if any, as well as the "context"
+            // (as I call it here) ended up having as many steps.  Thus, for now, this implementation seems simpler.
+            // However, I have not considered the relative performances yet.
+            var qs, parts, host, protocol;
+            url = stripDblSlashes(url);
+            parts = url.split("?");
+            qs = parts.length > 1 ? parts[1] : null;
+            parts = parts[0].split("/");
+            if (url.contains("://")){
+                protocol = parts[0];
+                parts.shift();
+                if (parts[0].trim() == "") parts.shift();
+            }
+            host = $.each({ name: "", port: ""}, parts[0].split(":"));
+            parts.shift();
+            return {
+                protocol:       protocol.replace(":",""),
+                hostname:       host.name,
+                port:           $.notEmpty(host.port) ? $.parseInt(host.port) : null,
+                file:           $re.extension.test(parts[parts.length - 1]) ? parts.pop() : null,
+                context:        $.notEmpty(parts[0]) ? parts[0] : null,
+                pathinfo:       parts.slice(1).join("/"),
+                search:         qs ? "?" + qs : "",
+                query:          qs
+            }
+        },
+        parseQueryString: function(url){
+            // TODO:  decode url
+            var result = {},
+                pair,
+                parts = ($public.getQueryString(url) || "").split("&");
+            parts.forEach(function(item){
+                pair = item.split("=");
+                result[pair[0].trim()] = pair[1].trim();
+            });
+            return result;
+        }
+    };
+
+    $.extend($public);
+
+})(jQuery);

@@ -1,0 +1,229 @@
+(function($)
+{
+    $.require("common/strings");
+    $.require("common/StringBuilder");
+
+    //============================================================ Private members
+
+    function $implements(obj, $interface)
+    {
+        if (!obj.interfaces || !($interface instanceof Interface)) return false;
+        if (!$.isArray(obj.interfaces))
+        {
+            $.error("$implements", "The interfaces property should be an Array:  " + obj.interfaces);
+        }
+
+        var i, len = obj.interfaces.length;
+        for (i = 0; i < len; i++)
+        {
+            if (obj.interfaces[i] === $interface) return true;
+        }
+        return false;
+    }
+
+    function Interface(a)
+    {
+        this.methods = {};
+
+        var methods = this.methods, methodName, i, len;
+        if (!$.isArray(a) && $.notEmpty(a)) $.error('Interface', 'requires either no arguments or a String array');
+        for (i = 0, len = a.length; i < len; i++)
+        {
+            methodName = a[i];
+            if (typeof methodName !== 'string') $.error("Interface", "index " + i + " is not a String.");
+            methods[methodName] = methodName;
+        }
+    }
+
+
+    //============================================================= Public members
+
+    $.Interface = function()
+    {
+        // A consequence of returning a new Interface here is that no public "Interface" type will exist.
+        // This is intentional.
+        return new Interface($.toArray(arguments));
+    };
+
+
+
+    /**
+     *   <p>Creates a new "class."  Like Java, it ensures that the parameter-less <b>initializer</b>
+     *   (the term "constructor" would not be quite correct here) of the parent class is called
+     *   when the subclass initializer is called.   Unlike Java, no error occurs if the parent
+     *   has no parameter-less initializer; however, the parent initializer also will not be invoked.
+     *   To call the parent initializer in such cases, insert this.$super(args) in the subclass initializer.
+     *   Also note that nothing forces you to make the $super() call the first line of the subclass initializer:
+     *   rightly or wrongly, it could be at the end of the subclass initializer or anywhere else within the
+     *   subclass initializer.</p>
+     *
+     *  <p>Also note that if you call a constructor with <b>fewer than the declared parameters</b>, the initialize()
+     *  method will not be invoked, and properties whose values are normally set by the constructor will not have values.</p>
+     *
+     *   @param {Function} [superClass] The parent class, if any.
+     *   @param {Object} classBody The body of the new class
+     *   @param {Array} [interfaces] Any interfaces implemented
+     */
+    $.Class = function()
+    {
+        /*
+         DESIGN:
+         var myClass = function(){};
+         if (parent) myClass.prototype = new Parent();
+         mixin(myClass.prototype, classBody);
+         */
+        var args = null,    // The specified class body.
+            c = null,       // The new "class," which is also a function.
+            $super = null,  // The parent "class," which is also a function.
+            init = null;     // The specified initializer or an empty function.
+
+        if (arguments.length >= 2){
+            $super = arguments[0];
+            args = arguments[1];
+        } else if (arguments.length == 1){
+            if ($.isObject(arguments[0], true)) args = arguments[0];
+        }
+
+        if (args && args.initialize){
+            init = args.initialize;
+        } else  {
+            if (!args) args = {};
+            init = args.initialize = function(){}
+        }
+
+        // New class
+        c = function(){
+            var len = arguments.length, $sinit /* Super constructor */;
+            /*
+             Calling the super class constructor first (if parameter-less), like Java does.
+             */
+            if ($super){
+                $sinit = $super.prototype.initialize;
+                if ($sinit.length == 0){
+                    $sinit.apply(this, arguments);  // Possible bug:  should this be $.toArray(arguments)?
+                }
+            }
+
+            // Call initialize(), the class constructor
+            init.apply(this, arguments);
+
+            // Abstract classes cannot be instantiated.
+            if (this.interfaces) {
+                $Object.implement.apply($Object, [this].concat(this.interfaces));
+            }
+        };
+
+        // Extend the parent class, if any, ensuring that instanceof works as expected for subclasses.
+        if ($super) c.prototype = new $super();
+
+        c.implement = function(){
+            c.prototype.interfaces = $.toArray(arguments);
+            return c;
+        };
+
+        // Mixing in the new "class body"
+        $.extend(c.prototype, args, {
+            constructor: c,
+            superClass: $super,
+            $super: function(prop, args) {
+                var p;
+                if (arguments.length > 1) {
+                    p = this.superClass.prototype[prop];
+                    if (!p) {
+                        $.log("[$super(prop, args)]\"" + prop + "\" was not found.");
+                    } else if (typeof p === "function" || p.constructor === Function) {
+                        return p.apply(this, args);
+                    }
+                } else if ($.isString(prop)) {
+                    p = this.superClass.prototype[prop];
+                    if (!p) $.log("[$super(prop)]\"" + prop + "\" was not found.");
+                    return p;
+                } else {
+                    // Note:  this can be called more than once per object.
+                    this.superClass.prototype.initialize.apply(this, arguments);
+                }
+            },
+            toString: function(){
+                return $Object.toString(this);
+            }
+        });
+
+        return c;
+    };
+
+
+    var $Object = {
+        
+        isa: function(obj, args)
+        {
+            // Don't allow an Interface to be the right operand of instanceof:  it will throw an error.
+            if (args instanceof Interface) return $implements(obj, args);
+            return (obj instanceof args);
+        },
+
+
+        /**
+         * Checks whether the specified object (yes, object) implements the methods required by the specified interface
+         * <b>Throws an error if the object does not implement the required methods.</b>
+         * 
+         * @param obj
+         * @param $interface
+         */
+        implement: function(obj, $interface /* ,... */)
+        {
+            function _implement(obj, $$interface)
+            {
+                if (!obj.interfaces) obj.interfaces = []; // TODO:  prevent "interfaces" from being changed from an array.
+                var $methods = $$interface.methods, errors = [], i, name;
+                for (i in $methods)
+                {
+                    if ($.isUndefined(obj[i]) || !$.isFunction(obj[i])) {
+                        errors.push(i);
+                    }
+                }
+                if (errors.length > 0) {
+                    $.error("$.implement",
+                            "{name} does not implement all of the required methods:  {methods}".applyTemplate(
+                                { name: obj.name || "arguments[0]", methods: errors.join(", ")}
+                     ));
+                }
+                obj.interfaces[obj.interfaces.length] = $$interface; // Adding an array property "interfaces" to obj to store the interfaces implemented.
+            }
+
+            for (var i = 1, len = arguments.length; i < len; i++)
+            {
+                _implement(obj, arguments[i]);
+            }
+
+            return obj;
+        },
+
+
+        toString: function(obj){ 
+            var i, str, buffer = new $.StringBuilder();
+            for (i in obj){
+                if (!$.isFunction(obj[i])) {
+                    buffer.append(i).append(":  ").append(obj[i]).append(", ");
+                }
+            }
+            str = buffer.toString().replace(/,\s+$/, "");
+            return str;
+        }
+    };
+
+
+    /*
+     Note that I don't add these methods to Object.prototype below
+     because that could have undesirable consequences:  objects that are meant to be empty (e.g., {})
+     would not be because they would inherit the methods from the prototype.  This would come up
+     when looping through object properties as well.  Instead, I make them "static" methods of Object.
+    */
+    $.extend(Object, $Object);
+
+
+    // Why did I do this?
+    $.augment(Function.prototype, {
+        implement: $Object.implement
+    });
+
+})(jQuery);

@@ -1,0 +1,3 @@
+jQuery.lib = {
+    name:  "Raphael"
+}

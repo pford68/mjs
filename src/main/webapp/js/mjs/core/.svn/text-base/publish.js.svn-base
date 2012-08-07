@@ -1,0 +1,110 @@
+/**
+ * Pub/sub frameworks.  I ported this from JCMS.  For now, the file contains only a topic-based system.
+ * I removed JCMS's Publisher class and the require() calls for common/oop.js and common/arrays.js.  Also,
+ * I am now mixing topics into jQuery, instead of into jcms.
+ *
+ * @author: Philip Ford
+ */
+
+(function($) {
+    $.require("common/arrays");
+    $.require("common/oop");
+
+    var Publisher, topicObject = {};
+
+
+    Function.prototype.subscribe = function(publisher) {
+        if (Object.isa(publisher, $.Publisher)) {
+            var instance = this, exists;
+            exists = publisher.subscribers.some(function(fn) {
+                return (fn === instance);
+            });
+            if (!exists) {
+                publisher.subscribers.push(this);
+            }
+        }
+        return this; // for chaining
+    };
+
+
+    Function.prototype.unsubscribe = function(publisher) {
+        if (Object.isa(publisher, $.Publisher)) {
+            var instance = this;
+            publisher.subscribers = publisher.subscribers.filter(function(fn) {
+                if (fn !== instance) {
+                    return fn;
+                }
+            });
+        }
+        return this;  // for chaining
+    };
+
+
+    Publisher = $.Class({
+        subscribers: null,
+        initialize: function() {
+            this.subscribers = [];
+        },
+        publish: function() {
+            var args = arguments;
+            //$.log("publish").log(args);
+            this.subscribers.forEach(function(fn) {
+                fn.apply(null, args);
+            });
+            return this; // for chaining
+        }
+    });
+
+    //========================================= For subscribing/publishing through topics.
+    topicObject = {
+        map: {},
+        subscribe: function(topicName, func) {
+            var $topics = topicObject.map;
+            if (arguments.length > 2) {
+                func = $.proxy(arguments[1], arguments[2]);
+            }
+            if (!$topics[topicName]) $topics[topicName] = [];
+
+            var exists = $topics[topicName].some(function(fn) {
+                return (fn === func);
+            });
+            if (!exists) {
+                $topics[topicName].push(func);
+            }
+            return this;  //For chaining
+        },
+        unsubscribe: function(topicName, func) {
+            var $topics = topicObject.map;
+            if (arguments.length > 2) {
+                func = $.proxy(arguments[1], arguments[2]);
+            }
+            if ($topics[topicName]) {   // MFM to prevent error when undefined
+                $topics[topicName] = $topics[topicName].filter(function(fn) {
+                    if (fn !== func) {
+                        return fn;
+                    }
+                });
+            }
+            return this;  // For chaining
+        },
+        unsubscribeAll: function(topicName) {
+            topicObject.map[topicName] = [];
+        },
+        publish: function(topicName, args) {
+            var $topics = topicObject.map;
+            if ($topics[topicName]) {   // MFM to prevent error when undefined
+                if ($.isArray($topics[topicName])) {
+                    $topics[topicName].forEach(function(fn) {
+                        fn(args);
+                    })
+                }
+            }
+            return this; //For chaining
+        }
+    };
+
+
+
+    $.extend($, { Publisher: Publisher, topics: topicObject });
+
+})(jQuery);

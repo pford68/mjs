@@ -1,0 +1,295 @@
+describe("RTRG JQuery plugin", function(){
+
+    jQuery.require("testPlugin");
+
+    beforeEach(function(){
+        jQuery.setDebugEnabled(true);
+    });
+
+
+    describe("$.setDebugEnabled()", function(){
+        var _log;
+
+        beforeEach(function(){
+            if (typeof console === 'undefined') {
+                console = {};
+            } else if (!_log){
+                _log = console.log;
+            }
+            $.extend(console, {
+               content:[],
+               log: function(msg){
+                   this.content.push(msg)
+               }
+            });
+        });
+
+        it("should allow console logging when the argument is 'true'", function(){
+            jQuery.setDebugEnabled(true);
+            expect(jQuery.isDebugEnabled()).toBeTruthy();
+
+            $.log("A");
+            expect(jQuery.isDebugEnabled()).toBeTruthy();
+            expect(console.content.length).toEqual(1);
+            expect(console.content[0]).toEqual("A");
+        });
+
+        it("should prevent console logging when the argument is 'false'", function(){
+            jQuery.setDebugEnabled(false);
+            expect(jQuery.isDebugEnabled()).toBeFalsy();
+            $.log("B");
+            expect(console.content.length).toEqual(0);
+
+            if (_log) console.log = _log;
+            console.log("console reset");
+        });
+    });
+
+
+    describe("$.log()", function(){
+        it("should not throw an error when the console is closed", function(){
+            jQuery.setDebugEnabled(true);
+            try {
+                jQuery.log("Hello, from jQuery.log!");
+            } catch (e) {
+                fail("An exception should not have been thrown.");
+            }
+        })
+    });
+
+
+    describe("$.error()", function(){
+        it("should throw an error", function(){
+            jQuery.setDebugEnabled(true);
+            try {
+                jQuery.error("Hello, from jQuery.error!");
+                fail("We should not have reached this point.");
+            } catch(e) {
+                jQuery.log("jQuery.error() passed.");
+            }
+        })
+    });
+
+
+    describe("$.augment()", function(){
+        var theObject,
+            mixin = {
+                id: 'mixin',
+                bgColor: 'red',
+                rank: '99%',
+                active: true,
+                getAge: function(){
+                    return 23;
+                },
+                execute: function(){
+                    return "Hello!";
+                },
+                getBgColor: function(){
+                    return this.bgColor;
+                }
+            };
+
+        beforeEach(function(){
+            theObject = {
+                id: 'test',
+                active: false,
+                bgColor: null,
+                getAge: function(){
+                    return 21;
+                }
+            };
+        });
+
+        it("should add new properties to an object", function(){
+            jQuery.augment(theObject, mixin);
+            expect(theObject.bgColor).not.toBeNull();
+            expect(theObject.bgColor).toEqual('red');
+            expect(theObject.rank).toEqual('99%');
+            expect(theObject.getBgColor()).toEqual('red');
+            expect(theObject.execute()).toEqual('Hello!');
+        });
+
+        it("should not override existing properties, even if they are null or false", function(){
+            jQuery.augment(theObject, mixin);
+            expect(theObject.id).toEqual('test');
+            expect(theObject.getAge()).toEqual(21);
+            expect(theObject.active).toBeFalsy();
+        });
+
+        it("should not remove any existing properties", function(){
+            jQuery.augment(theObject, mixin);
+            expect(theObject.id).not.toBeNull();
+            expect(theObject.getAge).not.toBeNull();
+            expect(theObject.bgColor).not.toBeNull();
+            expect(theObject.active).not.toBeNull();
+
+            expect(theObject.id).toBeDefined();
+            expect(theObject.getAge).toBeDefined();
+            expect(theObject.bgColor).toBeDefined();
+            expect(theObject.active).toBeDefined();
+        });
+    });
+
+
+    describe("$.override()", function(){
+        var theObject,
+            mixin = {
+                id: 'mixin',
+                bgColor: 'red',
+                rank: '99%',
+                active: true,
+                getAge: function(){
+                    return 23;
+                },
+                execute: function(){
+                    return "Hello!";
+                },
+                getBgColor: function(){
+                    return this.bgColor;
+                }
+            };
+
+        beforeEach(function(){
+            theObject = {
+                id: 'test',
+                active: false,
+                bgColor: null,
+                getAge: function(){
+                    return 21;
+                }
+            };
+        });
+
+        it("should not add new properties an object", function(){
+            jQuery.override(theObject, mixin);
+            expect(theObject.rank).not.toBeDefined();
+            expect(theObject.getBgColor).not.toBeDefined();
+            expect(theObject.execute).not.toBeDefined();
+        });
+
+        it("should override any corresponding existing properties, even if they are null or false", function(){
+            jQuery.override(theObject, mixin);
+            expect(theObject.bgColor).toEqual('red');
+            expect(theObject.id).toEqual('mixin');
+            expect(theObject.getAge()).toEqual(23);
+            expect(theObject.active).toBeTruthy();
+        });
+
+        it("should not remove any existing properties", function(){
+            jQuery.override(theObject, mixin);
+            expect(theObject.id).not.toBeNull();
+            expect(theObject.getAge).not.toBeNull();
+            expect(theObject.bgColor).not.toBeNull();
+            expect(theObject.active).not.toBeNull();
+
+            expect(theObject.id).toBeDefined();
+            expect(theObject.getAge).toBeDefined();
+            expect(theObject.bgColor).toBeDefined();
+            expect(theObject.active).toBeDefined();
+        });
+    });
+
+
+    describe("$.require()", function(){
+        it("should import the required file", function(){
+            expect(jQuery.test.ping()).toEqual("OK");
+            expect(jQuery.loadCount).toEqual(1);
+        });
+
+        it("should not import a required file more than once, and should not execute it more than once", function(){
+            jQuery.require("testPlugin");
+            jQuery.require("testPlugin");
+            jQuery.require("testPlugin");
+            expect(jQuery.loadCount).toEqual(1);
+        });
+
+        it("should not import a file once it is registered", function(){
+            jQuery.registerModule("blank");
+            expect(jQuery.blankLoaded).not.toBeDefined(); // A control
+            jQuery.require("blank");
+            expect(jQuery.blankLoaded).not.toBeDefined();
+        });
+
+        it("should be able to find any .js file path relative to the directory containing jquery-rtrg.js", function(){
+            expect(jQuery.flash).not.toBeDefined(); // A control
+            expect(jQuery.lib).not.toBeDefined(); // A control
+            jQuery.require("reverse/flash");
+            expect(jQuery.flash).toBeDefined();
+            jQuery.require("../lib/raphael.js");
+            expect(jQuery.lib.name).toEqual("Raphael");
+        });
+
+        it("should support the wildcard syntax, pulling in all files in __package__.js", function(){
+            expect(jQuery.redux).not.toBeDefined(); // A control
+            jQuery.require("redux/*");
+            expect(jQuery.redux.count).toEqual(4);
+        });
+
+        it("should import all files required by a required file...you know, recursively", function(){
+            expect(jQuery.model).not.toBeDefined(); // A control
+            expect(jQuery.reverse).not.toBeDefined(); // A control
+            jQuery.require("uncommon/model/TrainingEvent");
+            expect(jQuery.model).toBeDefined();
+            expect(jQuery.model.TrainingEvent).toBeDefined();
+            expect(jQuery.reverse.ajax).toBeDefined();
+        });
+    });
+
+
+    describe("$.toArray()", function(){
+
+    });
+
+    describe("$.isObject()", function(){
+
+    });
+
+    describe("$.isString()", function(){
+
+    });
+
+    describe("$.isInteger()", function(){
+
+    });
+
+    describe("$.isNumber()", function(){
+
+    });
+
+    describe("$.isBoolean()", function(){
+
+    });
+
+    describe("$.toBoolean()", function(){
+
+    });
+
+    describe("$.isArray()", function(){
+
+    });
+
+    describe("$.proxy()", function(){
+
+    });
+
+    describe("$.isEmpty()", function(){
+
+    });
+
+    describe("$.notEmpty()", function(){
+
+    });
+
+    describe("$.difference()", function(){
+
+    });
+
+    describe("$.parseInt()", function(){
+
+    });
+
+    describe("$.parseFloat()", function(){
+
+    });
+
+});

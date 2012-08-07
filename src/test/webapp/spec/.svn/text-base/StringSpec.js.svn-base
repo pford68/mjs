@@ -1,0 +1,159 @@
+describe("String extensions", function(){
+
+    describe("String.endsWith()", function(){
+        it("should return true if the string ends in the specified substring", function(){
+			expect("strings.js".endsWith("s")).toBeTruthy();
+            expect("strings2".endsWith("2")).toBeTruthy();
+        });
+
+
+        it("should return false if the string does not ends with the specified substring", function(){
+			expect("strings.js".endsWith("f")).toBeFalsy();
+        });
+
+        it("should throw an error if the argument is not a string", function(){
+            function testError(value){
+                try {
+                    "strings2".endsWith(value);
+                    fail("An error was not thrown.");
+                } catch (e) {
+                    // Do nothing
+                }
+            }
+
+            testError(2);
+            testError({});
+            testError([]);
+            testError(null);
+        });
+
+        it("should support substrings containing more than one character (e.g., \".js\")", function(){
+			expect("strings.js".endsWith(".js")).toBeTruthy();
+			expect("strings.js".endsWith("js")).toBeTruthy();
+			expect("strings.js".endsWith("trings.js")).toBeTruthy();
+			expect("strings.js".endsWith("tring.js")).toBeFalsy();
+        });
+    });
+
+
+    describe("String.startsWith()", function(){
+        it("should return true if the string starts with the specified substring", function(){
+			expect("strings.js".startsWith("s")).toBeTruthy();
+            expect("2strings".startsWith("2")).toBeTruthy();
+        });
+
+        it("should return false if the string does not start with the specified substring", function(){
+			expect("strings.js".startsWith("f")).toBeFalsy();
+        });
+
+        it("should throw an error if the argument is not a string", function(){
+            function testError(value){
+                try {
+                    "strings2".startsWith(value);
+                    fail("An error was not thrown.");
+                } catch (e) {
+                    // Do nothing;
+                }
+            }
+
+            testError(2);
+            testError({});
+            testError([]);
+            testError(null);
+        });
+
+        it("should support substrings containing more than one character (e.g., \"str\")", function(){
+			expect("strings.js".startsWith("str"));
+        });
+    });
+    /*
+		function testStartsWith()
+		{
+			assertTrue("strings.js".startsWith("s"));
+			assertTrue("strings.js".startsWith("str"));
+			assertFalse("strings.js".startsWith("f"));
+		}
+
+        function testTrim()
+        {
+            assertEquals("", "  ".trim());
+            assertEquals("", "".trim());
+            assertEquals("jgkfdl", "jgkfdl".trim());
+            assertEquals("jgkfdl", "   jgkfdl".trim());
+            assertEquals("jgkfdl", "   jgkfdl   ".trim());
+            assertEquals("jgkfdl", "jgkfdl   ".trim());
+        }
+
+        function testTrimLeft()
+        {
+            assertEquals("", "  ".trimLeft());
+            assertEquals("", "".trimLeft());
+            assertEquals("jgkfdl", "jgkfdl".trimLeft());
+            assertEquals("jgkfdl", "   jgkfdl".trimLeft());
+            assertEquals("jgkfdl   ", "   jgkfdl   ".trimLeft());
+            assertEquals("jgkfdl   ", "jgkfdl   ".trimLeft());
+        }
+
+
+        function testTrimRight()
+        {
+            assertEquals("", "  ".trimRight());
+            assertEquals("", "".trimRight());
+            assertEquals("jgkfdl", "jgkfdl".trimRight());
+            assertEquals("   jgkfdl", "   jgkfdl".trimRight());
+            assertEquals("   jgkfdl", "   jgkfdl   ".trimRight());
+            assertEquals("jgkfdl", "jgkfdl   ".trimRight());
+        }
+
+
+        function testCapitalize()
+        {
+            assertEquals("Porshe", "porshe".capitalize());
+            assertEquals("Porshe", "PORSHE".capitalize());
+            assertNotEquals("porshe", "porshe".capitalize());
+        }
+
+
+        function testReplaceArgs()
+        {
+            var pattern = "The {0} will win the {1} in the {2} season.";
+            assertEquals("The Dallas Cowboys will win the Super Bowl in the 2010-11 season.", pattern.replaceArgs(['Dallas Cowboys', 'Super Bowl', '2010-11']));
+            assertEquals("The Texas Rangers will win the World Series in the 2010 season.", pattern.replaceArgs(['Texas Rangers', 'World Series', 2010]));
+            try {
+                assertEquals("No replacements found", "No replacements found".replaceArgs(['Texas Rangers', 'World Series', 2010]));
+            } catch (e) {
+                fail("A pattern without parameters should not throw an error.");
+            }
+
+            var pattern2 = "Ar{2}a virumq{3}{4}cano, {1}rojiae que primus ob {0}";
+            var expected = "Arma virumque cano, Trojiae que primus ob oris";
+            assertEquals(expected, pattern2.replaceArgs(['oris', 'T', 'm', 'ue', ' ']));
+        }
+
+        function testApplyTemplate()
+        {
+            var pattern = "The {team} will win the {contest} in the {season} season.";
+            assertEquals("The Dallas Cowboys will win the Super Bowl in the 2010-11 season.", pattern.applyTemplate( { team: 'Dallas Cowboys', contest: 'Super Bowl', season: '2010-11'} ));
+            assertEquals("The Texas Rangers will win the World Series in the 2010 season.", pattern.applyTemplate({ team: 'Texas Rangers', contest: 'World Series', season: 2010}));
+            try {
+                assertEquals("No replacements found", "No replacements found".applyTemplate({ team: 'Texas Rangers', contest: 'World Series', season: 2010}));
+            } catch (e) {
+                fail("A pattern without parameters should not throw an error.");
+            }
+
+            var pattern2 = "Ar{second}a virumq{third}{fourth}cano, {first}rojiae que primus ob {beforeFirst}";
+            var expected = "Arma virumque cano, Trojiae que primus ob oris";
+            assertEquals(expected, pattern2.applyTemplate({beforeFirst: 'oris', first: 'T', second: 'm', third: 'ue', fourth: ' ', fifth: 'ghjkfdslg'}));
+        }
+
+        function testToCamelCase(){
+            assertEquals("rfiResponder", "RFI Responder".toCamelCase());
+            assertEquals("theDallasCowboysWillWinTheSuperBowlInThe2010-11Season.", "The Dallas Cowboys will win the Super Bowl in the 2010-11 season.".toCamelCase());
+            assertEquals("ryryryryr", "ryryryryr".toCamelCase());
+            assertEquals("01289", "01289".toCamelCase());
+            assertEquals("", "".toCamelCase());
+            assertEquals("-12345", "- 12345".toCamelCase());
+            assertEquals("texas", "TExaS".toCamelCase());
+        }
+        */
+});
