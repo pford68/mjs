@@ -75,9 +75,11 @@
     $.log('objectCreateTest.name/arguments.callee.name').log(objectCreateTest.name + "/" + arguments.callee.name);
 
     function Test(){
+        /*
         this._private = {
             id: $.UUID()
         };
+        */
 
         /*
         var id = $.UUID();
@@ -89,11 +91,11 @@
             }
         }); */
 
-        /*
         this.id = $.UUID();
         Object.seal(this);
-        */
+        Object.defineProperty(this, "id", { writable: false });
     }
+    /*
     Object.defineProperties(Test.prototype, {
         id: {
             set: function(){  },
@@ -102,6 +104,7 @@
             configurable: false
         }
     });
+    */
 
     var test = new Test();
     $.log("Test instance").log(test.id);
