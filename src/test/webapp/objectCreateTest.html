@@ -15,7 +15,7 @@
 </body>
 <script>
 (function objectCreateTest($){
-    $.module("mjs/browser/test");
+    $.require("mjs/core/utils");
 
     var name = arguments.callee.name;
     function getName(){ return name; }
@@ -33,11 +33,22 @@
             writable: true,
             configurable: false,
             enumerable: true
+        },
+        id: {
+            set: function(value){
+                if (typeof id === undefined) id = value;
+            },
+            get: function(){
+                return id;
+            },
+            enumerable: true,
+            configurable: true
         }
     });
     o.src = "OK";
     o.message = "Huh?";
     $.log("The object").log(o);   // Object { src="A-OK", message = "Huh?"}
+
 
     $.log("New o").log(Object.create(o));    // Object { src="A-OK", message = "Huh?"}
     var b = Object.create(o);
@@ -58,13 +69,47 @@
     });
     $.Exception.src = getName();
     $.Exception.message = "An Exception occurred.";
-    $.log("Exception object").log($.Exception);
+    $.log("Exception object").log($.Exception).log($.Exception.src);
 
     var t = "WOW!"
     $.log('objectCreateTest.name/arguments.callee.name').log(objectCreateTest.name + "/" + arguments.callee.name);
 
-    $.log("objectCreateTest.lastModule.scope").log(objectCreateTest.lastModule.scope);
+    function Test(){
+        this._private = {
+            id: $.UUID()
+        };
 
+        /*
+        var id = $.UUID();
+        Object.defineProperties(this, {
+            id: {
+                get: function(){ return id; },
+                enumerable: true,
+                configurable: false
+            }
+        }); */
+
+        /*
+        this.id = $.UUID();
+        Object.seal(this);
+        */
+    }
+    Object.defineProperties(Test.prototype, {
+        id: {
+            set: function(){  },
+            get: function(){ return this._private.id; },
+            enumerable: true,
+            configurable: false
+        }
+    });
+
+    var test = new Test();
+    $.log("Test instance").log(test.id);
+    test.id = 5;
+    $.log("Test instance").log(test.id);
+    var test2 = new Test();
+    $.log("Test instance 2").log(test2.id);
+    $.log("Test instance").log(test.id);
 
 })(mjs);
 </script>
