@@ -95,6 +95,7 @@
         Object.seal(this);
         Object.defineProperty(this, "id", { writable: false });
     }
+    // Note that using this method would be easier within a factory that used Object.create().
     /*
     Object.defineProperties(Test.prototype, {
         id: {
