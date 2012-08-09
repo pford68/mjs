@@ -166,28 +166,6 @@
             });
         },
 
-        /*
-        hashCode: {
-            enumerable: false,
-            configurable: false,
-            set: function(callback){
-                this.hashCode = callback();
-            }
-        },
-
-
-
-        equals: {
-            enumerable: false,
-            writable: false,
-            configurable: false,
-            value: function(that){
-                return (this.getType() === that.getType()) &&
-                    this.hashCode && that.hashCode &&
-                    (this.hashCode === that.hashCode);
-            }
-        },  */
-
 
 
         values: function(){
