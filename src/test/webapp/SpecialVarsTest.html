@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Function Prototype Experiments</title>
+    <script type="text/javascript" src="js/mjs.js" data-debugEnabled="true" data-jspath="js"></script>
+</head>
+<body>
+
+</body>
+<script>
+(function($){
+    $.require("mjs/xp/SpecialVars");
+
+    var a, b;
+    function testDestructuring(){
+        return [1,2,3];
+    }
+    [a,b] = testDestructuring();
+    $.log("Destructuring").log(b);
+
+    function test(){
+        $_ = function(item){ return item + "!"};
+        $.log("test").log($_[0]);
+        $.log("test").log($_[1]);
+        $.log("test").log($_[2]);
+    }
+
+    function add(value){
+        $_ = function(item){ return item + 2};
+        $.log($_[0]).log($_[1]);
+    }
+
+    function noTransform(){
+        $.log($_[0]).log($_[1]);
+    }
+
+    test("Woohoo", "OK", "WTF");
+    add(34, 2);
+    test("It works");
+    noTransform(4,5)
+})(mjs);
+</script>
+</html>
