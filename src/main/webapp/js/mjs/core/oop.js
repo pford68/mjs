@@ -158,7 +158,15 @@
             except within $.Class, which happens below as I assign a new instance of the super class, if any,
             to the prototype of the new class.
             */
-            if (arguments.length == 0 || arguments[0] !== inherit) init.apply(this, arguments);
+            if (arguments.length == 0 || arguments[0] !== inherit) {
+                init.apply(this, arguments);
+                Object.defineProperty(this, "_hash", {
+                    value: $.UUID(),
+                    writable: false,
+                    configurable: false,
+                    enumerable: false
+                });
+            }
 
 
             // Abstract classes cannot be instantiated.
@@ -180,10 +188,19 @@
 
         // Tell each method it's own name.
         for (var i in args){
-            if (args.hasOwnProperty(i) && $.isFunction(args[i])){
-                args[i].methodName = i;
+            if (args.hasOwnProperty(i)){
+                // TODO:  handle private members:  name starts with "_"
+                if ($.isFunction(args[i])){
+                    args[i].methodName = i;
+                }
             }
         }
+
+        $.augment(args, {
+            equals: function(that){
+                return this === that;
+            }
+        });
 
         // Mixing in the new "class body"
         $.extend(c.prototype, args, {
@@ -213,8 +230,13 @@
             },
             toString: function(){
                 return $Object.toString(this);
+            },
+            hash: function(){
+                return this._hash;
             }
         });
+
+        // TODO: Do we want to freeze the prototype?  How about the instance?
 
         return c;
     };
@@ -278,6 +300,10 @@
             }
             str = buffer.toString().replace(/,\s+$/, "");
             return str;
+        },
+
+        hash: function(that){
+            return $.isFunction(that.hash) ? that.hash : ($.isString(that) ? that : that + "");
         }
     };
 

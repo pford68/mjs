@@ -311,7 +311,8 @@
 
         /**
          *  Copies array elements to an object, behaving a little like PERL's each(), except this function can't
-         *  copy to new variables.
+         *  copy to new variables.   The "that" parameter is an object.  With "destructuring assignments" coming (or
+         *  here), assigning results to arrays of variables in not needed,
          */
         toEach: function(that){
             var i, index = 0;
@@ -322,6 +323,18 @@
                 }
             }
             return that;
+        },
+
+
+        clone: function(){
+            return this.slice(0);
+        },
+
+
+        remove: function(index){
+            var result = this[index];
+            this.splice(index, 1);
+            return result;
         }
 
     };

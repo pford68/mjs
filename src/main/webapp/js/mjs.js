@@ -569,9 +569,33 @@ var mjs = mjs || {};
         },
 
 
-        add: function(prop, value, options){
-            Object.defineProperty($public, prop, $public.extend({ value: value }, options || {} ));
-            return this;
+        range: function(start, end, step){
+            var result = [];
+            if ($.isNumber(start) && $.isNumber(end)){
+                step = step || 1;
+                while(start + step <= end){
+                    result.push(start += step);
+                }
+            } else {
+
+            }
+            return result;
+        },
+
+
+        /**
+         * Converts the arguments object to an array.  If a transformer function is provided,
+         * it performs the transformer function for each item in the
+         * @param $arguments
+         * @param transformer
+         * @return {Object}
+         */
+        from: function($arguments, transformer){
+            var $_ = Array.prototype.slice.call($arguments);
+            if ($public.isFunction(transformer)){
+                $_.forEach(transformer);
+            }
+            return $_;
         }
     };
 

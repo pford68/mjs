@@ -32,15 +32,6 @@
         },
 
 
-        fromArguments: function($arguments, map){
-            var i, args = {}, len = $arguments.length, key;
-            for (i = 0; i < len; i++){
-                key = map[i];
-                args[key] = $arguments[i];
-            }
-            return args;
-        },
-
 
         getCaller: function(callee){
             return callee && callee.caller ? callee.caller.name : "unnamed function";

@@ -26,6 +26,14 @@
      */
     $.Iterable = $.Interface("forEach", "size");
 
+
+    /**
+     * @name Iterator
+     * @type {*}
+     */
+    $.Iterator = $.Interface("hasNext", "next");
+
+
     /**
      * @name Cloneable
      * @class Implemented by class that implement their own clone() method.
