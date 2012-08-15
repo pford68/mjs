@@ -2,9 +2,10 @@
 
 (function($) {
     $.require("mjs/core/oop");
+    $.require("mjs/core/interface");
 
     /**
-     * Converts the specified array into a new Map (Object) whose keys are based on the values of specified keys.
+     * Converts an array of objects into an internal hash map whose keys are based on the values of specified keys.
      * In other words, each element of the new array keys gets a key that depends on values of properties
      * within the element.
      */
@@ -12,6 +13,12 @@
 
         key: "",
 
+        /**
+         * Takes an array of objects and a key.
+         *
+         * @param items
+         * @param key
+         */
         initialize: function(items, key)
         {
             this.items = {};
@@ -62,8 +69,7 @@
             return elem;
         },
 
-
-        each: function(f)
+        forEach: function(f)
         {
             var i, items = this.items, instance = this;
             for(i in items)
@@ -82,7 +88,7 @@
         size: function(){
             return this.toArray().length;
         }
-    });
+    }).implement($.Iterable);
 
 
 })(mjs);
