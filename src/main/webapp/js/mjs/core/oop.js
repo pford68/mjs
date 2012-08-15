@@ -71,7 +71,9 @@
                     args[i] = arguments[i];
                 }
                 for (var j in this.methods){
-                    args.push(this.methods[j]);
+                    if (this.methods.hasOwnProperty(j)) {
+                        args.push(this.methods[j]);
+                    }
                 }
                 return new Interface(args);
             }
@@ -147,9 +149,10 @@
             /*
             Call initialize(), the class constructor
 
-            Do not call it, however, if the constructor was invoke from within $.Class,
+            Do not call it, however, if the constructor was invoked from within $.Class,
             meaning we are assigning it to a subclass' prototype.  If we allowed that to happen,
-            that would violate my own mandate never to invoke a constructor with parameters automatically.
+            that would violate my own mandate never to invoke a constructor that has parameters
+            automatically.
 
             The strategy of using a totally private object (the inherit method) only worked when inherit
             was declared outside $.Class, though it still has to be within this file's closure to be private.
@@ -187,20 +190,40 @@
         };
 
         // Tell each method it's own name.
+        var arg, re_private = /^_/, prop;
         for (var i in args){
             if (args.hasOwnProperty(i)){
+                arg = args[i];
                 // TODO:  handle private members:  name starts with "_"
-                if ($.isFunction(args[i])){
-                    args[i].methodName = i;
+                if ($.isFunction(arg)){
+                    arg.methodName = i;
+                }
+                else if (arg.startsWith("_")){
+                    prop = i.replace(re_private, "");
+                    Object.defineProperty(c.prototype, prop, {
+                        enumerable: false,
+                        configurable: false,
+                        set: function(value){
+                            if (arguments.callee.caller in this){
+                                this[prop] = value;
+                            }
+                        },
+                        get: function(){
+
+                        }
+                    })
                 }
             }
         }
 
+        // The following mixins are meant to be superseded by
+        // (i.e., overridden by) corresponding properties in args.
         $.augment(args, {
             equals: function(that){
                 return this === that;
             }
         });
+
 
         // Mixing in the new "class body"
         $.extend(c.prototype, args, {
@@ -303,7 +326,7 @@
         },
 
         hash: function(that){
-            return $.isFunction(that.hash) ? that.hash : ($.isString(that) ? that : that + "");
+            return $.isFunction(that.hash) ? that.hash() : ($.isString(that) ? that : that + "");
         }
     };
 
