@@ -363,7 +363,21 @@ describe("MJS Core Functions", function(){
         });
 
         it("should correctly identify an object created in another window/frame", function(){
-            expect($.isObject(frames[0].map, true)).toBeTruthy();
+            var resume = false;
+
+            runs(function(){
+                setTimeout(function(){
+                    resume = true;
+                }, 1500)
+            });
+
+            waitsFor(function(){
+                return resume;
+            }, "", 5000);
+
+            runs(function(){
+                expect($.isObject(window.frames[0].map, true)).toBeTruthy();
+            });
         });
 
         it("should correctly identify that literals are not objects", function(){
