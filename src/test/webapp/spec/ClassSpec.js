@@ -211,6 +211,99 @@ describe("mjs.Class() suite", function() {
     });
 
 
+    describe("Any property whose name is all upper case should be a constant", function(){
+        var WTF = $.Class({
+            FIRST_ORDERED_NODE_TYPE: 'H1',
+            CLASSNAME: 'wtf',
+            size: 12,
+            width: 45,
+            initialize: function(args){
+                $.extend(this, args);
+            }
+        });
+        var instance;
+
+        beforeEach(function(){
+            instance = new WTF({ id: '3467', size: 56 });
+        });
+
+        it("should be immutable", function(){
+            expect(56).toEqual(instance.size);
+            expect('H1').toEqual(instance.FIRST_ORDERED_NODE_TYPE);
+
+            instance.CLASSNAME = "Huh?";
+            expect('wtf').toEqual(instance.CLASSNAME);
+
+            $.log("constants in $.Class").log(instance);
+
+            var another = new WTF({ FIRST_ORDERED_NODE_TYPE: 'table' });
+            expect('H1').toEqual(another.FIRST_ORDERED_NODE_TYPE);
+        });
+
+        it("should not be deletable", function(){
+            delete instance.FIRST_ORDERED_NODE_TYPE;
+            expect('H1').toEqual(instance.FIRST_ORDERED_NODE_TYPE);
+
+            delete instance.CLASSNAME;
+            expect('wtf').toEqual(instance.CLASSNAME);
+        });
+
+        it("should not be deletable/editable from the prototype either", function(){
+            delete WTF.prototype.FIRST_ORDERED_NODE_TYPE;
+            expect('H1').toEqual(WTF.prototype.FIRST_ORDERED_NODE_TYPE);
+
+            delete WTF.prototype.CLASSNAME;
+            expect('wtf').toEqual(WTF.prototype.CLASSNAME);
+
+            WTF.prototype.CLASSNAME = "A";
+            expect('wtf').toEqual(WTF.prototype.CLASSNAME);
+        });
+    });
+
+
+    describe("Any property whose names begin with an underscore should be private", function(){
+        var SomeMap = $.Class({
+            _items: null,
+            initialize: function(args){
+                this._items = $.extend({}, args);
+            },
+            put: function(k, v){
+                this._items[k] = v;
+            },
+            get: function(k){
+                return this._items[k];
+            }
+        });
+        var map = new SomeMap({ firstName: "Philip", lastName: "Ford"});
+
+        it("should not be accessible outside the class", function(){
+            var items;
+            try {
+                items = map._items;
+                this.fail("We should not reach this point.");
+            } catch(e) {
+               expect(items).toBeUndefined();
+            }
+        });
+
+        it("should be retrievable within instance methods", function(){
+            expect(map.get("firstName")).toEqual("Philip");
+        });
+
+        it("should be writable within instance methods", function(){
+            try {
+                map.put("ssn", "xxx-xx-xxxx");
+                map.put("firstName", "Constantine");
+            } catch(e) {
+                this.fail("map.put() should not have thrown and error.");
+            }
+            expect(map.get("firstName")).toEqual("Constantine");
+            expect(map.get("ssn")).toEqual("xxx-xx-xxxx");
+        });
+
+    });
+
+
 
     describe("Each instance of classes produced by $.Class()", function(){
         it("should contain only the expected members.", function(){
@@ -257,7 +350,7 @@ describe("mjs.Class() suite", function() {
     });
 
 
-    describe("Each method with in a class", function(){
+    describe("Each method within a class", function(){
         it("should know its own name", function(){
             expect(superClassObj.colorize.methodName).toEqual("colorize");
         });
