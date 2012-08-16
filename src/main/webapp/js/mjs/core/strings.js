@@ -136,6 +136,10 @@
          */
         notEmpty: function(){
             return !this.isEmpty();
+        },
+
+        isUpperCase: function(){
+            return this.toUpperCase() == this;
         }
         
     };
