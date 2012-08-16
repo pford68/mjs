@@ -722,5 +722,30 @@ describe("MJS Core Functions", function(){
             expect($.isFunction({})).toBeFalsy();
             expect($.isFunction("")).toBeFalsy();
         });
-    })
+    });
+
+
+    describe("constant", function(){
+        it("should create an immutable key/value pair", function(){
+            var my = {};
+            $.constant("__CLASSNAME__", "MyGreatClass", my);
+            my.__CLASSNAME__ = "OK";
+            expect("MyGreatClass").toEqual(my.__CLASSNAME__);
+        });
+
+        it("should create an key/value pair that can't be deleted from its object scope", function(){
+            var my = {};
+            $.constant("__CLASSNAME__", "MyGreatClass", my);
+
+            delete my.__CLASSNAME__;
+            expect("MyGreatClass").toEqual(my.__CLASSNAME__);
+        });
+
+        it("should convert the key to upper case if it is not already upper case", function(){
+            var my = {};
+            $.constant("some_Name", "Roger", my);
+            expect(my.SOME_NAME).toBeDefined();
+            expect(my.some_Name).toBeUndefined();
+        });
+    });
 });
