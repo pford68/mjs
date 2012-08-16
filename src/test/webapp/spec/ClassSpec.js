@@ -301,6 +301,54 @@ describe("mjs.Class() suite", function() {
             expect(map.get("ssn")).toEqual("xxx-xx-xxxx");
         });
 
+        it("should not be inherited", function(){
+            var SomeOtherMap = $.Class(SomeMap, {
+                getItems: function(){
+                    return this._items;
+                },
+
+                get: function(key){
+                    return this._items[key];
+                }
+            });
+
+            try {
+                expect(new SomeOtherMap().getItems()).toBeUndefined();
+                this.fail("We should not reach this point.");
+            } catch (e) {
+
+            }
+
+            var that = new SomeOtherMap();
+
+            that.put("test", 1);
+            try {
+                expect(that.get("test")).toBeUndefined();
+                this.fail("We should not reach this point.");
+            } catch(e){
+
+            }
+
+        });
+
+        it("should still be accessible from inherited methods", function(){
+            var SomeOtherMap = $.Class(SomeMap, {
+                getItems: function(){
+                    return this._items;
+                }
+            });
+
+            var that = new SomeOtherMap();
+
+            try {
+                that.put("test", 1);
+                expect(that.get("test")).toEqual(1);
+            } catch(e){
+                this.fail("We should not reach this point.");
+            }
+
+        });
+
     });
 
 

@@ -122,6 +122,10 @@
      *   rightly or wrongly, it could be at the end of the subclass initializer or anywhere else within the
      *   subclass initializer.</p>
      *
+     *   <p>If a property name is all upper case, it will be turned into a constant.  If a property name begins with
+     *   and underscore, it will become private, meaning that it will not be accessible outside of methods of the class.
+     *   Any attempt by other classes to access the property will throw an error.
+     *   </p>
      *
      *
      *   @param {Function} [superClass] The parent class, if any.
@@ -215,19 +219,20 @@
             return c;
         };
 
-        // Tell each method it's own name.
         var arg, _p = {};
         for (var i in args){
             if (args.hasOwnProperty(i)){
                 arg = args[i];
-                // TODO:  handle private members:  name starts with "_"
+                // Handle private properties
                 if (i.startsWith("_")){
                     _p[i] = arg;
                     delete args[i];
                 }
+                // Tell each method its own name
                 else if ($.isFunction(arg)){
                     arg.methodName = i;
                 }
+                // Handle constants
                 else if (i.isUpperCase()){
                     $.constant(i, arg, c.prototype);
                 }
@@ -277,6 +282,9 @@
             }
         });
 
+        // Adding private accessor properties to the prototype.  They have to be added after the
+        // public methods are mixed in:  the accessors for the property need to determine whether the function
+        // the attempts to access the property is in the prototype.
         for (i in _p){
             if (_p.hasOwnProperty(i)){
                 _private(c.prototype, i, _p[i]);
