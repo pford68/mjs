@@ -45,6 +45,7 @@
     })();
 
 
+    // Creates a private property named k in that.
     function _private(that, k, v){
         var _p = v, errorMsg = "{0} is accessible only inside the class {1}";
         delete that[k];
@@ -125,7 +126,6 @@
      *
      *   @param {Function} [superClass] The parent class, if any.
      *   @param {Object} classBody The body of the new class
-     *   @param {Array} [interfaces] Any interfaces implemented
      */
     $.Class = function()
     {
