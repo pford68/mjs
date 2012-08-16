@@ -569,6 +569,16 @@ var mjs = mjs || {};
         },
 
 
+        /**
+         * Returns an array of numbers from the start to the end, incremented by the specified step:
+         * e.g., $.range(1,5) returns [1,2,3,4,5].  For other types of ranges, create an array of items,
+         * then use Array.prototype.range in mjs/core/arrays to produce ranges from that set of items.
+         *
+         * @param start
+         * @param end
+         * @param step
+         * @return {Array}
+         */
         range: function(start, end, step){
             var result = [];
             if ($.isNumber(start) && $.isNumber(end)){
@@ -576,8 +586,6 @@ var mjs = mjs || {};
                 while(start + step <= end){
                     result.push(start += step);
                 }
-            } else {
-
             }
             return result;
         },
@@ -585,7 +593,8 @@ var mjs = mjs || {};
 
         /**
          * Converts the arguments object to an array.  If a transformer function is provided,
-         * it performs the transformer function for each item in the
+         * it performs the transformer function for each item in the arguments object.
+         *
          * @param $arguments
          * @param transformer
          * @return {Object}
@@ -598,6 +607,15 @@ var mjs = mjs || {};
             return $_;
         },
 
+
+        /**
+         * Creates a constant by the name specified by k in the specific object scope, or in mjs
+         * if no scope is specified.  The constant is immutable and cannot be deleted from its scope.
+         *
+         * @param k
+         * @param v
+         * @param scope
+         */
         constant: function(k, v, scope){
             if ($public.isObject(v)) {
                 throw new Error("A constant must be a String or a primitive:  {0}:{1}".replaceArgs(k, v));
