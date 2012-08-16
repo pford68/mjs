@@ -122,9 +122,19 @@
      *   rightly or wrongly, it could be at the end of the subclass initializer or anywhere else within the
      *   subclass initializer.</p>
      *
-     *   <p>If a property name is all upper case, it will be turned into a constant.  If a property name begins with
-     *   and underscore, it will become private, meaning that it will not be accessible outside of methods of the class.
-     *   Any attempt by other classes to access the property will throw an error.
+     *   <p>Class body:
+     *   <ul>
+     *       <li>Constants:  If a property name is all upper case, it will be turned into a constant. </li>
+     *       <li>Private visibility:  If a property name begins with an underscore, it will become private.
+     *           <ul>
+     *               <li>It will not be accessible outside of methods of the class.
+     *                   Any attempt by other classes to access the property will throw an error. </li>
+     *               <li>It will not be inherited by subclasses:  e.g., overriding methods will not be able
+     *                   to access it.</li>
+     *               <li>It will still be accessible in inherited methods. </li>
+     *           </ul>
+     *       </li>
+     *   </ul>
      *   </p>
      *
      *
