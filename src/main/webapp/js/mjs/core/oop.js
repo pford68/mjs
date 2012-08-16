@@ -45,6 +45,33 @@
     })();
 
 
+    // Creates a private property named k in that.
+    function _private(that, k, v){
+        var _p = v, errorMsg = "{0} is accessible only inside the class {1}";
+        delete that[k];
+
+        Object.defineProperty(that, k, {
+            get: function(){
+                var caller = arguments.callee.caller;
+                if (that[caller.methodName] == caller){   // Using the "in" operator did not work
+                    return _p;
+                }
+                throw new Error(errorMsg.replaceArgs(k, that.name || ""))
+            },
+            set: function(value){
+                var caller = arguments.callee.caller;
+                if (that[caller.methodName] == caller){ // Using the "in" operator did not work
+                    _p = value;
+                } else {
+                    throw new Error(errorMsg.replaceArgs(k, that.name || ""));
+                }
+            },
+            configurable: false,
+            enumerable: false
+        })
+    }
+
+
     //============================================================= Public members
 
     $.Interface = function()
@@ -95,11 +122,24 @@
      *   rightly or wrongly, it could be at the end of the subclass initializer or anywhere else within the
      *   subclass initializer.</p>
      *
+     *   <p>Class body:
+     *   <ul>
+     *       <li>Constants:  If a property name is all upper case, it will be turned into a constant. </li>
+     *       <li>Private visibility:  If a property name begins with an underscore, it will become private.
+     *           <ul>
+     *               <li>It will not be accessible outside of methods of the class.
+     *                   Any attempt by other classes to access the property will throw an error. </li>
+     *               <li>It will not be inherited by subclasses:  e.g., overriding methods will not be able
+     *                   to access it.</li>
+     *               <li>It will still be accessible in inherited methods. </li>
+     *           </ul>
+     *       </li>
+     *   </ul>
+     *   </p>
      *
      *
      *   @param {Function} [superClass] The parent class, if any.
      *   @param {Object} classBody The body of the new class
-     *   @param {Array} [interfaces] Any interfaces implemented
      */
     $.Class = function()
     {
@@ -189,29 +229,22 @@
             return c;
         };
 
-        // Tell each method it's own name.
-        var arg, re_private = /^_/, prop;
+        var arg, _p = {};
         for (var i in args){
             if (args.hasOwnProperty(i)){
                 arg = args[i];
-                // TODO:  handle private members:  name starts with "_"
-                if ($.isFunction(arg)){
+                // Handle private properties
+                if (i.startsWith("_")){
+                    _p[i] = arg;
+                    delete args[i];
+                }
+                // Tell each method its own name
+                else if ($.isFunction(arg)){
                     arg.methodName = i;
                 }
-                else if (arg.startsWith("_")){
-                    prop = i.replace(re_private, "");
-                    Object.defineProperty(c.prototype, prop, {
-                        enumerable: false,
-                        configurable: false,
-                        set: function(value){
-                            if (arguments.callee.caller in this){
-                                this[prop] = value;
-                            }
-                        },
-                        get: function(){
-
-                        }
-                    })
+                // Handle constants
+                else if (i.isUpperCase()){
+                    $.constant(i, arg, c.prototype);
                 }
             }
         }
@@ -258,6 +291,15 @@
                 return this._hash;
             }
         });
+
+        // Adding private accessor properties to the prototype.  They have to be added after the
+        // public methods are mixed in:  the accessors for the property need to determine whether the function
+        // the attempts to access the property is in the prototype.
+        for (i in _p){
+            if (_p.hasOwnProperty(i)){
+                _private(c.prototype, i, _p[i]);
+            }
+        }
 
         // TODO: Do we want to freeze the prototype?  How about the instance?
 

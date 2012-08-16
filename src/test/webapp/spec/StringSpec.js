@@ -293,4 +293,22 @@ describe("String.prototype", function(){
         });
     });
 
+
+    describe("isUpperCase()", function(){
+        it("should return true if every alphabetic character in the string is upper case", function(){
+           expect("FIRST_NAME".isUpperCase()).toBeTruthy();
+        });
+
+        it("should return false if any alphabetic character in the string is lower case", function(){
+            expect("FIRST_nAME".isUpperCase()).toBeFalsy();
+            expect("something".isUpperCase()).toBeFalsy();
+        });
+
+        it("should be unaffected by non-alphabetic characters", function(){
+            expect("FIRST2".isUpperCase()).toBeTruthy();
+            expect("44566677".isUpperCase()).toBeTruthy();
+            expect("*-".isUpperCase()).toBeTruthy();
+        });
+    });
+
 });
