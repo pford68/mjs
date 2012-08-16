@@ -596,6 +596,20 @@ var mjs = mjs || {};
                 $_.forEach(transformer);
             }
             return $_;
+        },
+
+        constant: function(k, v, scope){
+            if ($public.isObject(v)) {
+                throw new Error("A constant must be a String or a primitive:  {0}:{1}".replaceArgs(k, v));
+            }
+            scope = scope || $;
+            k = k.toUpperCase();
+            Object.defineProperty(scope, k, {
+                value: v,
+                writable: false,
+                enumerable: true,
+                configurable: false
+            });
         }
     };
 
