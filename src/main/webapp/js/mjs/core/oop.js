@@ -45,30 +45,41 @@
     })();
 
 
+    function contains(that, value){
+        for (var i in that){
+            if (that[i] == value) return true;
+        }
+        return false;
+    }
+
+
     // Creates a private property named k in that.
-    function _private(that, k, v){
-        var _p = v, errorMsg = "{0} is accessible only inside the class {1}";
+    function _private(that, k, v, className){
+        var _p = v,
+            errorMsg = "{0} is accessible only inside the class {1}";
         delete that[k];
+
 
         Object.defineProperty(that, k, {
             get: function(){
                 var caller = arguments.callee.caller;
-                if (that[caller.methodName] == caller){   // Using the "in" operator did not work
+                if (contains(that, caller)){
                     return _p;
                 }
-                throw new Error(errorMsg.replaceArgs(k, that.name || ""))
+                throw new Error(errorMsg.replaceArgs(k, className || ""));
             },
             set: function(value){
                 var caller = arguments.callee.caller;
-                if (that[caller.methodName] == caller){ // Using the "in" operator did not work
+                if (contains(that, caller)){ // Using the "in" operator did not work
                     _p = value;
                 } else {
-                    throw new Error(errorMsg.replaceArgs(k, that.name || ""));
+                    throw new Error(errorMsg.replaceArgs(k, className || ""));
                 }
             },
             configurable: false,
             enumerable: false
-        })
+        });
+
     }
 
 
@@ -289,19 +300,25 @@
             },
             hash: function(){
                 return this._hash;
+            },
+            getClassName: function(){
+                return this._className;
             }
         });
+
 
         // Adding private accessor properties to the prototype.  They have to be added after the
         // public methods are mixed in:  the accessors for the property need to determine whether the function
         // the attempts to access the property is in the prototype.
         for (i in _p){
             if (_p.hasOwnProperty(i)){
-                _private(c.prototype, i, _p[i]);
+                _private(c.prototype, i, _p[i], _p._className);
             }
         }
 
         // TODO: Do we want to freeze the prototype?  How about the instance?
+        // Note:  Freezing the prototype breaks unit tests.
+        // The answer to the second question is probably no.
 
         return c;
     };
