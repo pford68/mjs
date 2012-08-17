@@ -5,7 +5,7 @@ describe("mjs/core/aop", function(){
     $.require("mjs/core/aop");
 
     describe("before()", function(){
-        it("should add new behavior to the original function", function(){
+        it("should add new behavior before the original function", function(){
             var advised, adviser, result;
             advised = {add: function(increment){this.left += increment; }, id: 'test', left: 32, top: 43};
             adviser = {override: function(increment){ advised.left = increment; }};
@@ -42,7 +42,7 @@ describe("mjs/core/aop", function(){
     });
 
     describe("after()", function(){
-        it("should add new behavior to the advised function", function(){
+        it("should add new behavior after the advised function", function(){
             var advised, adviser, result;
             advised = {add: function(increment){this.left += increment; }, id: 'test', left: 32, top: 43};
             adviser = {override: function(increment){ advised.left = increment; }};
@@ -78,7 +78,7 @@ describe("mjs/core/aop", function(){
 
 
     describe("around()", function(){
-        it("should add new behavior to the advised function", function(){
+        it("should add new behavior before and after the original function", function(){
             var advised, adviser, result;
             advised = {add: function(increment){this.left += increment; }, id: 'test', left: 32, top: 43};
             adviser = {override: function(invocation){
@@ -91,6 +91,21 @@ describe("mjs/core/aop", function(){
             advised.add(2);
 
             expect(advised.left).toEqual(20);
+
+            function error(){
+                throw new Error();
+            }
+            function suppress(proceed, invocation){
+                if (proceed === false){
+                    invocation.proceed();
+                }
+            }
+            error = $.addAdvice(suppress).around(error);
+            try {
+                error();
+            } catch(e){
+                this.fail("The error should not have been thrown.");
+            }
         });
     });
 
