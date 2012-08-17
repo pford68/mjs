@@ -214,12 +214,6 @@
             */
             if (arguments.length == 0 || arguments[0] !== inherit) {
                 init.apply(this, arguments);
-                Object.defineProperty(this, "_hash", {
-                    value: $.UUID(),
-                    writable: false,
-                    configurable: false,
-                    enumerable: false
-                });
             }
 
 
@@ -263,8 +257,23 @@
         // The following mixins are meant to be superseded by
         // (i.e., overridden by) corresponding properties in args.
         $.augment(args, {
+            /**
+             * Defines how to compare instances of this class.  <strong>Does not require hash().</strong>
+             *
+             * @param that
+             * @return {Boolean}
+             */
             equals: function(that){
                 return this === that;
+            },
+            /**
+             * Created to support hashtables, though ironically mjs.util.Hashtable class does not use it.
+             * HashMap does, however.
+             *
+             * @return {Object}
+             */
+            hash: function(){
+                return $.UUID();
             }
         });
 
@@ -298,11 +307,8 @@
             toString: function(){
                 return $Object.toString(this);
             },
-            hash: function(){
-                return this._hash;
-            },
             getClassName: function(){
-                return this._className;
+                return this._className || "";
             }
         });
 
