@@ -37,19 +37,19 @@ var mjs = mjs || {};
         //images = "",                                          // The image directory
         regex = {
             on: /^on/,
-            motModule: /^\.\.\/+/
+            motModule: /^\.\.\/+/,
+            letter: /[a-z]/i
         },
         modulePrefixes = {},                                    // This is largely obsolete:  I no longer support mapping paths to modules, as Dojo does/did.  It is unnecessary
         regex_module = /\.|\//,                                 // Regular expression for modules paths
         $public,                                                // Public members
-        debugEnabled = false,                                   // Whether the app is in debug mode (i.e., sends log messages to the console, etc.)
-        reportErrors = true;
+        debugEnabled = false;                                   // Whether the app is in debug mode (i.e., sends log messages to the console, etc.)
+
 
     function readAttributes(tag){
         var debugAttr, errorAttr, $bool = $public.toBoolean;
         debugAttr = tag.getAttribute("data-debugEnabled") || false;
         debugEnabled = $bool(debugAttr);
-        reportErrors = $bool(errorAttr);
         $config.locale = tag.getAttribute("data-locale") || "en";
     }
 
@@ -84,8 +84,6 @@ var mjs = mjs || {};
             throw new Error(fatal.join(""));
         }
     }
-
-
 
     function writeLogMessage(src, msg) {
         return ['[', src, '] ', msg].join('');
@@ -410,6 +408,10 @@ var mjs = mjs || {};
             return (typeof value !== "undefined" && value !== null && (typeof value === "string" || value.constructor == String));
         },
 
+        isLetter: function(value){
+            return $public.isString(value) && value.length === 1 && value.match(regex.letter);
+        },
+
 
         isNumber: function(value) {
             return typeof value === 'number';
@@ -569,10 +571,12 @@ var mjs = mjs || {};
         },
 
 
+
         /**
-         * Returns an array of numbers from the start to the end, incremented by the specified step:
-         * e.g., $.range(1,5) returns [1,2,3,4,5].  For other types of ranges, create an array of items,
-         * then use Array.prototype.range in mjs/core/arrays to produce ranges from that set of items.
+         * Like Python's range(), returns an array of numbers from the start up to, but not including,
+         * the end.  The values are incremented by the specified step:  e.g., $.range(1,5) returns [1,2,3,4].
+         * Again, like Python's range(), if you pass only one parameter, you'll get a range from 0 up to, but not
+         * including that parameter.  Again, like Python's version, it does not work for floats.
          *
          * @param start
          * @param end
@@ -581,10 +585,16 @@ var mjs = mjs || {};
          */
         range: function(start, end, step){
             var result = [];
-            if ($.isNumber(start) && $.isNumber(end)){
+            if (end == null){
+                end = start;
+                start = 0;
+            }
+            if ($.isInteger(start) && $.isInteger(end)){
                 step = step || 1;
-                while(start + step <= end){
-                    result.push(start += step);
+                while(start < end){
+                    $.log("range").log(start + ":" + end + ":" + step);
+                    result.push(start);
+                    start += step;
                 }
             }
             return result;

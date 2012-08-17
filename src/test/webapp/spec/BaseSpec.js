@@ -709,7 +709,7 @@ describe("MJS Core Functions", function(){
         });
     });
 
-    describe("isFunction", function(){
+    describe("isFunction()", function(){
         it("should return true for any function", function(){
             function test(){}
             expect($.isFunction(test)).toBeTruthy();
@@ -725,7 +725,7 @@ describe("MJS Core Functions", function(){
     });
 
 
-    describe("constant", function(){
+    describe("constant()", function(){
         it("should create an immutable key/value pair", function(){
             var my = {};
             $.constant("__CLASSNAME__", "MyGreatClass", my);
@@ -748,4 +748,47 @@ describe("MJS Core Functions", function(){
             expect(my.some_Name).toBeUndefined();
         });
     });
+
+
+    describe("isLetter()", function(){
+        it("should return true if the specified value is a letter", function(){
+            expect($.isLetter("p")).toBeTruthy();
+            expect($.isLetter("A")).toBeTruthy();
+        });
+
+        it("should return false if the specified value is a multi-character string", function(){
+            expect($.isLetter("pr")).toBeFalsy();
+        });
+
+        it("should return false if the specified value is a number or other character or other value", function(){
+            expect($.isLetter("0")).toBeFalsy();
+            expect($.isLetter("_")).toBeFalsy();
+            expect($.isLetter("*")).toBeFalsy();
+            expect($.isLetter("")).toBeFalsy();
+            expect($.isLetter(" ")).toBeFalsy();
+            expect($.isLetter(null)).toBeFalsy();
+            expect($.isLetter(8)).toBeFalsy();
+        });
+    });
+
+
+    describe("range", function(){
+        it("should return an array of integers between the start and end", function(){
+            var result = $.range(1, 10);
+            expect(result.length).toEqual(9);
+            expect(result.join(",")).toEqual("1,2,3,4,5,6,7,8,9");
+        });
+
+        it("should return an array of integers incremented by the specified step", function(){
+            var result = $.range(0, 21, 5);
+            expect(result.join(",")).toEqual("0,5,10,15,20");
+        });
+
+        it("should work for negative numbers", function(){
+            var result = $.range(-5, 0);
+            expect(result.join(",")).toEqual("-5,-4,-3,-2,-1");
+            result = $.range(-5,1);
+            expect(result.join(",")).toEqual("-5,-4,-3,-2,-1,0");
+        });
+    })
 });
