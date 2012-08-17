@@ -1,9 +1,0 @@
-/**
- *  Includes the most basic monterey-js files, plus common/ajax.js
- *
- *  @author Philip Ford
- */
-(function($){
-    $.require("profiles/jquery-rtrg-basic");
-    $.require("common/ajax");
-})(jQuery);

@@ -1,7 +1,5 @@
 /**
- * Pub/sub frameworks.  I ported this from JCMS.  For now, the file contains only a topic-based system.
- * I removed JCMS's Publisher class and the require() calls for common/oop.js and common/arrays.js.  Also,
- * I am now mixing topics into jQuery, instead of into jcms.
+ * Pub/sub frameworks.
  *
  * @author: Philip Ford
  */
