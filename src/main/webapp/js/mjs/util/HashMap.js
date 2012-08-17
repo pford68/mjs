@@ -36,7 +36,7 @@
             var instance = this;
             mjs.decorate(map).forEach(function(item, key){
                 instance.put(key, item);
-            })
+            });
         },
 
         get: function(key){
