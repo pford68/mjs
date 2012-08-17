@@ -349,6 +349,25 @@ describe("mjs.Class() suite", function() {
 
         });
 
+        describe("_className", function(){
+            var SomeOtherMap = $.Class(SomeMap, {
+                _className: "mjs.test.SomeOtherMap"
+            });
+
+            it("should be private", function(){
+                try {
+                    $.log(new SomeOtherMap()._className);
+                    this.fail("We should not reach this point.");
+                } catch(e){
+                    expect(e.message.contains("mjs.test.SomeOtherMap")).toBeTruthy();
+                }
+            });
+
+            it("should be accessible indirectly through getClassName()", function(){
+                expect(new SomeOtherMap().getClassName()).toEqual("mjs.test.SomeOtherMap");
+            });
+        })
+
     });
 
 
