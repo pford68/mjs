@@ -1,4 +1,4 @@
-describe("mjs.Url", function(){
+describe("mjs.http.Url", function(){
 
     var $ = mjs;
 
