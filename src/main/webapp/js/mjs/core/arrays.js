@@ -335,6 +335,16 @@
             var result = this[index];
             this.splice(index, 1);
             return result;
+        },
+
+
+        /**
+         * Returns the last item in the array without removing it.
+         *
+         * @return {*}
+         */
+        last: function(){
+            return this[this.length - 1];
         }
 
     };
