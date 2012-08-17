@@ -138,6 +138,11 @@
             return !this.isEmpty();
         },
 
+
+        /**
+         * Returns true/false for whether the String is all uppercase.
+         * @return {Boolean}
+         */
         isUpperCase: function(){
             return this.toUpperCase() == this;
         }
