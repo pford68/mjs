@@ -216,6 +216,13 @@
                     return this.like(that);
                 }
             });
+        },
+
+        contains: function(that){
+            for (var i in this.component){
+                if (this.component[i] == that) return true;
+            }
+            return false;
         }
     });
 
