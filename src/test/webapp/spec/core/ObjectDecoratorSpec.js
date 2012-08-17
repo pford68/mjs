@@ -191,7 +191,8 @@ describe("mjs/core/ObjectDecorator", function(){
 
 
     describe("difference()", function(){
-        it("should return a new object containing the differences (property name and value) between the component and specified object", function(){
+        it("should return an object containing the differences (different key or different key/value pair)" +
+            " b/w the component and the specified object", function(){
             var obj1 = { id: 3, name: "John" };
             var obj2 = { id: 4, value: 45, name: "John" };
             var diff = $.decorate(obj1).difference(obj2);
@@ -420,6 +421,6 @@ describe("mjs/core/ObjectDecorator", function(){
                 expect($.decorate(cdata).getSpec().equals(obj)).toBeTruthy();
             });
         });
-    })
+    });
 
 });
