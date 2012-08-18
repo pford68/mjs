@@ -69,7 +69,9 @@
             var str = this + "", re, i;
             for (i in args) {
                 re = new RegExp("\\{" + i + "\\}", "gi");
-                str = str.replace(re, args[i]);
+                if (args.hasOwnProperty(i)){
+                    str = str.replace(re, args[i]);
+                }
             }
             return str;
         },
