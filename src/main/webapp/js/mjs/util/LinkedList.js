@@ -1,6 +1,3 @@
-/**
- * An implementation of a doubly-linked list.
- */
 
 (function($){
 
@@ -84,29 +81,47 @@
 
 
     /**
-     *
-     * @constructor
+     * <p>
+     *     An implementation of a doubly-linked list.  The idea is to allow quick insertion and deletion.
+     * </p>
+     * <p>
+     *     Features include:
+     *      <ul>
+     *          <li>Iterate through the items using either the iterator property or the rightIterator property, which
+     *              iterates in reverse order.</li>
+     *          <li>Insert at a given index in the list, or remove an item at a given index.</li>
+     *          <li>Retrieve an item at a given index.</li>
+     *  </ul>
+     * </p>
+     * <p>
+     *    Honestly, have I ever really needed a LinkedList in JavaScript?  No, but at times I have thought I
+     *    <strong>might</strong> need one, though that ended up not being true. I think the issue will hinge on
+     *    whether insertAt()/removeAt() are faster than Array.prototype.splice(), a question which I have not
+     *    yet tested.
+     * </p>
      */
-    function LinkedList(){
-        this.length = 0;
-        this.head = null;
-        this.tail = null;
-        this.iterator = new Iterator(this);
-        this.reverseIterator = new ReverseIterator(this);
-    }
-    Object.defineProperties(LinkedList.prototype, {
-        length: { writable: true, configurable: false, enumerable: true },
-        head: { writable: true, configurable: false, enumerable: false },
-        tail: { writable: true, configurable: false, enumerable: false },
-        iterator: { writable: true, configurable: false, enumerable: false },
-        reverseIterator: { writable: true, configurable: false, enumerable: false }
-    });
-    $.extend(LinkedList.prototype, {
+    $.util.LinkedList = $.Class({
+        _length: 0,
+        _head: null,
+        _tail: null,
+        iterator: null,
+        rightIterator: null,
+        
+        initialize: function(){
+            // The following three properties have to be reinitialized for every instance,
+            // or else they are shared by all.
+            this._length = 0;
+            this._head = null;
+            this._tail = null;
+
+            this.iterator = new Iterator(this);
+            this.rightIterator = new ReverseIterator(this);
+        },
         getAt: function(index){
             var count = 0,
-                current = this.head,
+                current = this._head,
                 result = null;
-            if (count > -1 && index < this.length){
+            if (count > -1 && index < this._length){
                 while (count++ < index){
                     current = current.next;
                 }
@@ -116,35 +131,53 @@
         },
         add: function(that){
             var item = new LinkedListItem(that);
-            if (this.head == null){
-                this.head = item;
+            $.log("LinkedList item").log(item);
+            if (this._head == null){
+                this._head = item;
             } else {
-                var current = this.head;
+                var current = this._head;
                 while (current.next){
                     current = current.next;
                 }
                 current.next = item;
                 item.previous = current;
             }
-            this.tail = item;
-            ++this.length;
+            this._tail = item;
+            ++this._length;
         },
         insertAt: function(index, that){
-            var count = 0, previous, next,
+            var count = 0,
                 item = new LinkedListItem(that);
-            if (this.head == null){
-                this.head = item;
+
+            if (this._head == null){
+                // This also means that the list was empty, so the index is ignored
+                // and the code in the else clause is irrelevant.
+                this._head = item;
             } else {
-                var current = this.head;
+                var current = this._head;
                 while (count++ < index){
                     current = current.next;
                 }
-                insertLink(that, current.previous, current);
+                insertLink(item, current.previous, current);
             }
-            ++this.length;
+            ++this._length;
+        },
+        removeAt: function(index){
+            var count = 0,
+                current = this._head;
+            if (!this._head) return;   // This should mean that the list is empty.
+
+            while (count++ < index){
+                current = current.next;
+            }
+            if (index == 0) this._head = current.next;
+            if (index == this._length -1) this._tail = current.previous;
+            current.previous.next = current.next;
+            current.next.previous = current.previous;
+            --this._length;
         },
         toArray: function(){
-            var result = [], current = this.head;
+            var result = [], current = this._head;
             while (current.next){
                 result.push(current);
                 current = current.next;
@@ -152,17 +185,14 @@
             return result;
         },
         size: function(){
-            return this.length;
+            return this._length;
         },
         getFirst: function(){
-            return this.head.value;
+            return this._head.value;
         },
         getLast: function(){
-            return this.tail.value;
+            return this._tail.value;
         }
     });
 
-
-
-    $.LinkedList = LinkedList;
 })(mjs);
