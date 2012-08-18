@@ -19,9 +19,9 @@
     var m = {
         /**
          * Copies the contents of the associated array to the specified array.
-         * @param {array} a The array to which to copy indices
-         * @param {integer} [start] The index at which to start copying indices
-         * @param {integer} [count] The number of elements to copy, including the one at index "start"
+         * @param {Object[]} a The array to which to copy indices
+         * @param {Integer} [start] The index at which to start copying indices
+         * @param {Integer} [count] The number of elements to copy, including the one at index "start"
          * @scope Array.prototype
          */
         copy: function(a, start, count)
@@ -42,10 +42,10 @@
 
         /**
          * Inserts new elements and/or removes old elements.  For use in browsers that don't support the native function.
-         * @param {integer} startIndex The index at which to start the replacement/deletion/assertion.
-         * @param {integer} number  The number of items to delete/replace, starting with and including the element at startIndex, in the array.
+         * @param {Integer} startIndex The index at which to start the replacement/deletion/assertion.
+         * @param {Integer} number  The number of items to delete/replace, starting with and including the element at startIndex, in the array.
          * @scope Array.prototype
-         * @return {array} The elements that were removed
+         * @return {Object[]} The elements that were removed
          */
         splice: function(startIndex, number, varargs)
         {
