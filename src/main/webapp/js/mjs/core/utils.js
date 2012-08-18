@@ -14,7 +14,6 @@
          *
          * @see http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
          * @return {*}
-         * @constructor
          */
         GUID: function(){
             function S4() {
@@ -30,7 +29,6 @@
          * @see http://www.broofa.com/Tools/Math.uuid.js
          *
          * @return {String}
-         * @constructor
          */
         UUID: function(){
             var uuid = new Array(36), rnd=0, r;
