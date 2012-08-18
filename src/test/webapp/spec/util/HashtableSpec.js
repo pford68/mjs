@@ -31,6 +31,14 @@ describe("mjs.util.Hashtable", function(){
         expect(records.get("Porsche/Boxster")).toEqual(recordArray[7]);
     });
 
+    it("should allow us to add one item at a time to the table and to retrieve it later", function(){
+        var bentley = { make: 'Bentley', model: 'Continental', color: 'Midnight Green', year: 2012 };
+        records.add(bentley);
+        expect(records.size()).toEqual(9);
+        expect(records.get("Bentley/Continental").color).toEqual("Midnight Green");
+        expect(records.get("Bentley/Continental")).toEqual(bentley);
+    });
+
 
     describe("The constructor", function(){
         it("should require a key template", function(){
@@ -44,6 +52,7 @@ describe("mjs.util.Hashtable", function(){
            }
         });
     });
+
 
 
     describe("forEach()", function(){
