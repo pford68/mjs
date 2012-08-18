@@ -62,35 +62,39 @@ describe("mjs.util.LinkedList", function(){
         });
     });
 
-    describe("LinkedList Iterators", function(){
-        beforeEach(function(){
+
+    describe("forEach()", function(){
+        it("should allow us to iterate through the list, using the assigned iterator, executing a function on each item", function(){
             list.add(cars[1]);
             list.add(cars[4]);
             list.add(cars[6]);
-        });
 
-        describe("LinkedList.iterator", function(){
-            it("should allow us to iterate through the list with forEach, executing a function on each item", function(){
-                var models = [];
-                list.iterator.forEach(function(item){
-                    models.push(item.value.model);
-                });
-                expect(models.length).toEqual(5);
-                expect(models.join(",")).toEqual("328i,Model S,Aventador,335i,Roadster");
+            var models = [];
+            list.forEach(function(item){
+                models.push(item.value.model);
             });
+            expect(models.length).toEqual(5);
+            expect(models.join(",")).toEqual("328i,Model S,Aventador,335i,Roadster");
         });
-
-        describe("LinkedList.rightIterator", function(){
-            it("should allow us to iterate backwards through the list with forEach, executing a function on each item", function(){
-                var models = [];
-                list.rightIterator.forEach(function(item){
-                    models.push(item.value.model);
-                });
-                expect(models.length).toEqual(5);
-                expect(models.join(",")).toEqual("Roadster,335i,Aventador,Model S,328i");
-            });
-        });
-
     });
+
+
+    describe("LinkedList.iterators.Right", function(){
+        it("should allow us to iterate backwards through the list with forEach, executing a function on each item", function(){
+            list.add(cars[1]);
+            list.add(cars[4]);
+            list.add(cars[6]);
+
+            list.setIterator($.util.LinkedList.iterators.Right);
+
+            var models = [];
+            list.forEach(function(item){
+                models.push(item.value.model);
+            });
+            expect(models.length).toEqual(5);
+            expect(models.join(",")).toEqual("Roadster,335i,Aventador,Model S,328i");
+        });
+    });
+
 
 });

@@ -1,6 +1,10 @@
 
 (function($){
 
+    $.require("mjs/core/oop");
+    $.require("mjs/core/interfaces");
+
+
     function insertLink(that, previous, next){
         previous.next = that;
         that.next = next;
@@ -30,35 +34,52 @@
 
     function Iterator(that){
         this.parent = that;
+        this.currentIndex = 0;
     }
     $.extend(Iterator.prototype, {
-        forEach: function(callback){
+        next: function(){
             var parent = this.parent,
                 current = parent.peekFirst(),
+                index = this.currentIndex,
                 count = 0;
-            var index = arguments.length > 1 ? arguments[0] : parent.size();
             while(count++ < index){
-                callback(current, count, parent);
                 current = current.next;
             }
+
+            this.currentIndex = count;
             return current;
+        },
+        hasNext: function(){
+            return this.currentIndex < this.parent.size();
+        },
+        reset: function(){
+            this.currentIndex = 0;
         }
     });
 
     function ReverseIterator(that){
         this.parent = that;
+        this.currentIndex = that.size() - 1;
     }
+    ReverseIterator.prototype = new Iterator();
     $.extend(ReverseIterator.prototype, {
-        forEach: function(callback){
-            var index = arguments.length > 1 ? arguments[0] : 0;
+        next: function(){
             var parent = this.parent,
+                index = this.currentIndex,
                 current = parent.peekLast(),
-                count = parent.size();
+                count = parent.size() - 1;
             while(count-- > index){
-                callback(current, count, parent);
+                $.log("reverse iterator next").log(current).log(count);
                 current = current.previous;
             }
+            this.currentIndex = count;
             return current;
+        },
+        hasNext: function(){
+            return this.currentIndex >= 0;
+        },
+        reset: function(){
+            this.currentIndex = this.parent.size() - 1;
         }
     });
 
@@ -85,25 +106,27 @@
      *    yet tested.
      * </p>
      */
-    $.util.LinkedList = $.Class({
+    var LinkedList = $.Class({
         /*
          Note: A result of making _head and _tail private is that they aren't accessible in the Iterators.
          */
         _length: 0,
         _head: null,
         _tail: null,
-        iterator: null,
-        rightIterator: null,
-        
-        initialize: function(){
+        _iterator: null,
+
+        /**
+         *
+         * @param [args]
+         */
+        initialize: function(args){
             // The following three properties have to be reinitialized for every instance,
             // or else they are shared by all.
             this._length = 0;
             this._head = null;
             this._tail = null;
 
-            this.iterator = new Iterator(this);
-            this.rightIterator = new ReverseIterator(this);
+            this._iterator = (args && args._iterator) || Iterator;
         },
         /**
          * Retrieves the item at the specified index.
@@ -230,7 +253,33 @@
          */
         peekLast: function(){
             return this._tail;
+        },
+        forEach: function(callback){
+            /*
+            My decision to use an iterator pattern will probably slow forEach down
+            (because of the double while loop) and may  be ill-conceived for that reason.
+            But I'll keep it for now.
+             */
+            var it = new this._iterator(this);
+            while(it.hasNext()){
+                callback(it.next(), it.currentIndex, this);
+            }
+        },
+        setIterator: function(iterator){
+            Object.implement(iterator.prototype, $.Iterator);
+            this._iterator = iterator;
+        }
+    }).implement($.Iterable);
+
+
+    $.extend(LinkedList, {
+        iterators: {
+            Left: Iterator,
+            Right: ReverseIterator
         }
     });
+
+
+    $.util.LinkedList = LinkedList;
 
 })(mjs);
