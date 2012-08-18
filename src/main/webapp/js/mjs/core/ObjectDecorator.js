@@ -4,18 +4,6 @@
  */
 (function($) {
 
-    $.augment(Object, {
-        keys: function(that){
-            var count = 0;
-            for (var i in that){
-                if (that.hasOwnProperty(i)){
-                    ++count;
-                }
-            }
-            return count;
-        }
-    });
-
     var ObjectDecorator = function(that){
         this.component = that;
     };

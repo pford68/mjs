@@ -641,11 +641,28 @@ var mjs = mjs || {};
         }
     };
 
+
+    //================================================= Activating the framework
+
+    // Add the core functions to the namespace, if they are not already present.
     $public.augment($, $public);
 
-    //================================================== Start class loader and set configuration values
+    // Start class loader and set configuration values
     configure();
 
+    // Ensure that certain new browser features exist.
+    $public.augment(Object, {
+        // Object.keys() is used frequently in the framework.
+        keys: function(that){
+            var count = 0;
+            for (var i in that){
+                if (that.hasOwnProperty(i)){
+                    ++count;
+                }
+            }
+            return count;
+        }
+    });
 
     //================================================== Imports
     $public.require("mjs/core/strings");     // Minimize this file's dependencies from now on.
