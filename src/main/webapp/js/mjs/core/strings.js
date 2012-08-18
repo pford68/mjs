@@ -46,7 +46,7 @@
 
         /**
          *
-         * @param args
+         * @param {Arguments}
          */
 		replaceArgs: function(){
 			if (arguments.length == 0) return;
