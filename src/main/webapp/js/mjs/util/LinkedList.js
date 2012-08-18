@@ -91,6 +91,7 @@
      *              iterates in reverse order.</li>
      *          <li>Insert at a given index in the list, or remove an item at a given index.</li>
      *          <li>Retrieve an item at a given index.</li>
+     *          <li>Duplicates are allowed.</li>
      *  </ul>
      * </p>
      * <p>
