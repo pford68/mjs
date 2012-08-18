@@ -54,6 +54,11 @@
                 <include name="**/*.js" />
             </fileset>
         </copy>
+        <copy todir="${test.deploy.dir}/${ant.project.name}-tests/js/mjs/fixtures">
+            <fileset dir="${test.webapp.dir}/fixtures">
+                <include name="**/*.js" />
+            </fileset>
+        </copy>
         <copy todir="${test.deploy.dir}/${ant.project.name}-tests">
             <fileset dir="${test.webapp.dir}">
                 <include name="**/*.html" />
