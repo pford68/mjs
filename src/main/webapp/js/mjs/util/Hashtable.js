@@ -70,6 +70,7 @@
             }
         },
 
+
         /**
          * Adds an item to the hashtable.
          *
@@ -77,8 +78,9 @@
          */
         add: function(that)
         {
+            // TODO:  I am not checking with the object has the properties needed by the key.
             this._items[this._key.applyTemplate(that)] = that;
-         },
+        },
 
 
         /**
