@@ -5,6 +5,7 @@ describe("mjs.util.LinkedList", function(){
 
     $.require("mjs/util/LinkedList");
     $.require("mjs/fixtures/cars");
+    $.require("mjs/core/arrays");   // For help in tests.
 
     var cars = $.fixtures.cars;
 
@@ -61,11 +62,35 @@ describe("mjs.util.LinkedList", function(){
         });
     });
 
-    describe("LinkedList.iterator.forEach()", function(){
+    describe("LinkedList Iterators", function(){
+        beforeEach(function(){
+            list.add(cars[1]);
+            list.add(cars[4]);
+            list.add(cars[6]);
+        });
+
+        describe("LinkedList.iterator", function(){
+            it("should allow us to iterate through the list with forEach, executing a function on each item", function(){
+                var models = [];
+                list.iterator.forEach(function(item){
+                    models.push(item.value.model);
+                });
+                expect(models.length).toEqual(5);
+                expect(models.join(",")).toEqual("328i,Model S,Aventador,335i,Roadster");
+            });
+        });
+
+        describe("LinkedList.rightIterator", function(){
+            it("should allow us to iterate backwards through the list with forEach, executing a function on each item", function(){
+                var models = [];
+                list.rightIterator.forEach(function(item){
+                    models.push(item.value.model);
+                });
+                expect(models.length).toEqual(5);
+                expect(models.join(",")).toEqual("Roadster,335i,Aventador,Model S,328i");
+            });
+        });
 
     });
 
-    describe("LinkedList.rightIterator.forEach()", function(){
-
-    })
 });

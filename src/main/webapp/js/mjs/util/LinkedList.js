@@ -34,20 +34,12 @@
     $.extend(Iterator.prototype, {
         forEach: function(callback){
             var parent = this.parent,
-                current = parent.head,
+                current = parent.peekFirst(),
                 count = 0;
-            var index = arguments.length > 1 ? arguments[0] : null;
-            if (index){
-                while(count++ < index){
-                    current = current.next;
-                    callback(current, count, parent);
-                }
-            } else {
-                while(current.next){
-                    current = current.next;
-                    callback(current, count, parent);
-                    ++count;
-                }
+            var index = arguments.length > 1 ? arguments[0] : parent.size();
+            while(count++ < index){
+                callback(current, count, parent);
+                current = current.next;
             }
             return current;
         }
@@ -58,21 +50,13 @@
     }
     $.extend(ReverseIterator.prototype, {
         forEach: function(callback){
-            var index = arguments.length > 1 ? arguments[0] : null;
+            var index = arguments.length > 1 ? arguments[0] : 0;
             var parent = this.parent,
-                current = parent.tail,
+                current = parent.peekLast(),
                 count = parent.size();
-            if (index){
-                while(count-- > index){
-                    current = current.previous;
-                    callback(current, count, parent);
-                }
-            } else {
-                while(current.previous){
-                    current = current.previous;
-                    callback(current, count, parent);
-                    --count;
-                }
+            while(count-- > index){
+                callback(current, count, parent);
+                current = current.previous;
             }
             return current;
         }
@@ -102,6 +86,9 @@
      * </p>
      */
     $.util.LinkedList = $.Class({
+        /*
+         Note: A result of making _head and _tail private is that they aren't accessible in the Iterators.
+         */
         _length: 0,
         _head: null,
         _tail: null,
@@ -118,6 +105,12 @@
             this.iterator = new Iterator(this);
             this.rightIterator = new ReverseIterator(this);
         },
+        /**
+         * Retrieves the item at the specified index.
+         *
+         * @param index
+         * @return {*}
+         */
         getAt: function(index){
             var count = 0,
                 current = this._head,
@@ -130,6 +123,10 @@
             }
             return result;
         },
+        /**
+         * Adds the specified item to the tail of the list.
+         * @param that
+         */
         add: function(that){
             var item = new LinkedListItem(that);
             $.log("LinkedList item").log(item);
@@ -146,6 +143,12 @@
             this._tail = item;
             ++this._length;
         },
+        /**
+         * Inserts the specified item at the specified index.
+         *
+         * @param index
+         * @param that
+         */
         insertAt: function(index, that){
             var count = 0,
                 item = new LinkedListItem(that);
@@ -163,6 +166,10 @@
             }
             ++this._length;
         },
+        /**
+         * Removes the item at the specified index.
+         * @param index
+         */
         removeAt: function(index){
             var count = 0,
                 current = this._head;
@@ -177,6 +184,10 @@
             current.next.previous = current.previous;
             --this._length;
         },
+        /**
+         * Converts the list to an array.
+         * @return {Array}
+         */
         toArray: function(){
             var result = [], current = this._head;
             while (current.next){
@@ -185,14 +196,40 @@
             }
             return result;
         },
+        /**
+         * Returns the number of items in the list.
+         * @return {Number}
+         */
         size: function(){
             return this._length;
         },
+        /**
+         * Returns the <strong>value</strong> of the head of the list.
+         * @return {*}
+         */
         getFirst: function(){
             return this._head.value;
         },
+        /**
+         * Returns the <strong>value</strong> of the tail of the list.
+         * @return {*}
+         */
         getLast: function(){
             return this._tail.value;
+        },
+        /**
+         * Returns the LinkedListItem at the head of the list.
+         * @return {*}
+         */
+        peekFirst: function(){
+            return this._head;
+        },
+        /**
+         * Returns the LinkedListItem at the tail of the list.
+         * @return {*}
+         */
+        peekLast: function(){
+            return this._tail;
         }
     });
 
