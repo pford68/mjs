@@ -69,7 +69,6 @@
                 current = parent.peekLast(),
                 count = parent.size() - 1;
             while(count-- > index){
-                $.log("reverse iterator next").log(current).log(count);
                 current = current.previous;
             }
             this.currentIndex = count;
