@@ -68,7 +68,9 @@
             if (args == null) return;
             var str = this + "", re, i;
             for (i in args) {
-                re = new RegExp("\\{" + i + "\\}", "gi");
+                // (2012/08/17) Added the $? to the pattern to prepare for supporting Java/Groovy-style
+                // placeholders without breaking existing code.
+                re = new RegExp("\\$?\\{" + i + "\\}", "gi");
                 if (args.hasOwnProperty(i)){
                     str = str.replace(re, args[i]);
                 }
