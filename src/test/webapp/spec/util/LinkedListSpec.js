@@ -64,7 +64,13 @@ describe("mjs.util.LinkedList", function(){
 
 
     describe("forEach()", function(){
-        it("should allow us to iterate through the list, using the assigned iterator, executing a function on each item", function(){
+        var RightIterator = $.util.LinkedList.iterators.Right;
+
+        afterEach(function(){
+            list.setIterator($.util.LinkedList.iterators.Left);
+        });
+
+        it("should iterate through the list, using the assigned iterator, executing a function on each item", function(){
             list.add(cars[1]);
             list.add(cars[4]);
             list.add(cars[6]);
@@ -76,16 +82,29 @@ describe("mjs.util.LinkedList", function(){
             expect(models.length).toEqual(5);
             expect(models.join(",")).toEqual("328i,Model S,Aventador,335i,Roadster");
         });
-    });
 
+        it("should handle empty lists correctly", function(){
+            var emptyList = new $.util.LinkedList();
+            var count = 0;
 
-    describe("LinkedList.iterators.Right", function(){
-        it("should allow us to iterate backwards through the list with forEach, executing a function on each item", function(){
+            try {
+                emptyList.forEach(function(item){
+                    ++count;
+                    $.log("count: " + count);
+                    throw new Error("We should not be here.");
+                });
+            } catch(e){
+                this.fail(e.message)
+            }
+            expect(count).toEqual(0);
+        });
+
+        it("should iterate backwards, if we set the Right iterator", function(){
             list.add(cars[1]);
             list.add(cars[4]);
             list.add(cars[6]);
 
-            list.setIterator($.util.LinkedList.iterators.Right);
+            list.setIterator(RightIterator);
 
             var models = [];
             list.forEach(function(item){
@@ -95,6 +114,7 @@ describe("mjs.util.LinkedList", function(){
             expect(models.join(",")).toEqual("Roadster,335i,Aventador,Model S,328i");
         });
     });
+
 
 
 });
