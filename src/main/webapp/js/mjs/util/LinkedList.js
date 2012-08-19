@@ -34,51 +34,45 @@
 
     function Iterator(that){
         this.parent = that;
-        this.currentIndex = 0;
+        this.first = that.peekFirst();
+        this.notEmpty = this.first != null;
+        this.reset();
     }
     $.extend(Iterator.prototype, {
         next: function(){
-            var parent = this.parent,
-                current = parent.peekFirst(),
-                index = this.currentIndex,
-                count = 0;
-            while(count++ < index){
-                current = current.next;
-            }
-
-            this.currentIndex = count;
-            return current;
+            this.current = (this.current == null) ? this.first : this.current.next;
+            this.currentIndex++;
+            return this.current;
         },
         hasNext: function(){
-            return this.currentIndex < this.parent.size();
+            // If this.current == null, that means we are at the head of the list.
+            return this.notEmpty && (this.current == null || this.current.next != null);
         },
         reset: function(){
-            this.currentIndex = 0;
+            this.currentIndex = -1;
+            this.current = null;
         }
     });
 
     function ReverseIterator(that){
         this.parent = that;
-        this.currentIndex = that.size() - 1;
+        this.first = that.peekLast();
+        this.notEmpty = this.first != null;
+        this.reset();
     }
-    ReverseIterator.prototype = new Iterator();
     $.extend(ReverseIterator.prototype, {
         next: function(){
-            var parent = this.parent,
-                index = this.currentIndex,
-                current = parent.peekLast(),
-                count = parent.size() - 1;
-            while(count-- > index){
-                current = current.previous;
-            }
-            this.currentIndex = count;
-            return current;
+            this.current = (this.current == null) ? this.first : this.current.previous;
+            this.currentIndex--;
+            return this.current;
         },
         hasNext: function(){
-            return this.currentIndex >= 0;
+            // If this.current == null, that means we are at the tail of the list.
+            return this.notEmpty && (this.current == null || this.current.previous != null);
         },
         reset: function(){
-            this.currentIndex = this.parent.size() - 1;
+            this.currentIndex = this.parent.size();
+            this.current = null;
         }
     });
 
@@ -151,14 +145,10 @@
          */
         add: function(that){
             var item = new LinkedListItem(that);
-            $.log("LinkedList item").log(item);
             if (this._head == null){
                 this._head = item;
             } else {
-                var current = this._head;
-                while (current.next){
-                    current = current.next;
-                }
+                var current = this._tail;
                 current.next = item;
                 item.previous = current;
             }
@@ -253,17 +243,26 @@
         peekLast: function(){
             return this._tail;
         },
+        /**
+         * Executes a function for each item in the list.
+         *
+         * @param callback
+         */
         forEach: function(callback){
-            /*
-            My decision to use an iterator pattern will probably slow forEach down
-            (because of the double while loop) and may  be ill-conceived for that reason.
-            But I'll keep it for now.
-             */
             var it = new this._iterator(this);
+            /*
+            I opted for an iterator pattern to enable flexible traversing, but the relative
+            complexity of the iterator, compared with the succinct speedy while loop in
+            getAt(), for example, makes me think this may prove to be a mistake.
+             */
             while(it.hasNext()){
                 callback(it.next(), it.currentIndex, this);
             }
         },
+        /**
+         *
+         * @param iterator
+         */
         setIterator: function(iterator){
             Object.implement(iterator.prototype, $.Iterator);
             this._iterator = iterator;
