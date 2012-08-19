@@ -34,45 +34,40 @@
 
     function Iterator(that){
         this.parent = that;
-        this.first = that.peekFirst();
-        this.notEmpty = this.first != null;
         this.reset();
     }
     $.extend(Iterator.prototype, {
         next: function(){
-            this.current = (this.current == null) ? this.first : this.current.next;
-            this.currentIndex++;
+            this.current = this.current.next;
+            ++this.currentIndex;
             return this.current;
         },
         hasNext: function(){
-            // If this.current == null, that means we are at the head of the list.
-            return this.notEmpty && (this.current == null || this.current.next != null);
+            return this.current.next != null;
         },
         reset: function(){
             this.currentIndex = -1;
-            this.current = null;
+            this.current = { next: this.parent.peekFirst() };
         }
     });
 
     function ReverseIterator(that){
         this.parent = that;
-        this.first = that.peekLast();
-        this.notEmpty = this.first != null;
         this.reset();
     }
     $.extend(ReverseIterator.prototype, {
         next: function(){
-            this.current = (this.current == null) ? this.first : this.current.previous;
-            this.currentIndex--;
+            this.current = this.current.previous;
+            --this.currentIndex;
             return this.current;
         },
         hasNext: function(){
-            // If this.current == null, that means we are at the tail of the list.
-            return this.notEmpty && (this.current == null || this.current.previous != null);
+            return this.current.previous != null;
         },
         reset: function(){
-            this.currentIndex = this.parent.size();
-            this.current = null;
+            var p = this.parent;
+            this.currentIndex = p.size();
+            this.current = { previous: p.peekLast() };
         }
     });
 
