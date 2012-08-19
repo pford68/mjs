@@ -104,10 +104,8 @@ describe("mjs.util.LinkedList", function(){
             list.add(cars[4]);
             list.add(cars[6]);
 
-            list.setIterator(RightIterator);
-
             var models = [];
-            list.forEach(function(item){
+            list.setIterator(RightIterator).forEach(function(item){
                 models.push(item.value.model);
             });
             expect(models.length).toEqual(5);

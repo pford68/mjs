@@ -261,6 +261,7 @@
         setIterator: function(iterator){
             Object.implement(iterator.prototype, $.Iterator);
             this._iterator = iterator;
+            return this;
         }
     }).implement($.Iterable);
 
