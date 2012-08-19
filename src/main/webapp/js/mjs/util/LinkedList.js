@@ -131,7 +131,7 @@
             var count = 0,
                 current = this._head,
                 result = null;
-            if (count > -1 && index < this._length){
+            if (index < this._length){
                 while (count++ < index){
                     current = current.next;
                 }
@@ -249,12 +249,12 @@
          * @param callback
          */
         forEach: function(callback){
-            var it = new this._iterator(this);
             /*
             I opted for an iterator pattern to enable flexible traversing, but the relative
             complexity of the iterator, compared with the succinct speedy while loop in
             getAt(), for example, makes me think this may prove to be a mistake.
              */
+            var it = new this._iterator(this);
             while(it.hasNext()){
                 callback(it.next(), it.currentIndex, this);
             }
