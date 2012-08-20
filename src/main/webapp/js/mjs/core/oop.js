@@ -241,7 +241,7 @@
                 // Handle private properties
                 if (i.startsWith("_")){
                     _p[i] = arg;
-                    delete args[i];
+                    delete args[i];  // TODO: move this out of the loop.
                 }
                 // Tell each method its own name
                 else if ($.isFunction(arg)){
@@ -273,7 +273,7 @@
              * @return {Object}
              */
             hash: function(){
-                return $.UUID();
+                return $.UUID();  // No, JSON.stringify() is not a solution here:  can't guarantee the order
             }
         });
 
@@ -312,12 +312,15 @@
             }
         });
 
+        // TODO:  consider adding code to execute a "static initializer" here for customizing the class as a whole:
+        // e.g., calling Object.defineProeprties().
 
         // Adding private accessor properties to the prototype.  They have to be added after the
         // public methods are mixed in:  the accessors for the property need to determine whether the function
         // the attempts to access the property is in the prototype.
         for (i in _p){
             if (_p.hasOwnProperty(i)){
+                // TODO:  Strip private properties from the prototype here before re-adding them as accessor properties.
                 _private(c.prototype, i, _p[i], _p._className);
             }
         }
@@ -392,6 +395,21 @@
 
         hash: function(that){
             return $.isFunction(that.hash) ? that.hash() : ($.isString(that) ? that : that + "");
+        },
+
+        /**
+         * Makes the specified property private.
+         *
+         * @param prop
+         * @param that
+         * @param className
+         */
+        encapsulate: function(prop, that, className){
+            var value = that[prop], pName = prop.capitalize();
+            delete that[prop];
+            that["get" + pName] = function(){ return that[prop]};
+            that["set" + pName] = function(value){ that[prop] = value; };
+            _private(that, prop, value, className)
         }
     };
 
