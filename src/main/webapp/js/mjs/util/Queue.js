@@ -5,6 +5,7 @@
 (function ($) {
 
     $.require("mjs/core/oop");
+    $.require("mjs/core/interfaces");
 
     $.util.Queue = $.Class({
         _items: null,
@@ -26,6 +27,10 @@
         },
         peek: function(){
             return this._items[0];
+        },
+        forEach: function(callback){
+            this._items.forEach(callback);
+            return this;
         }
-    })
+    }).implement($.Iterable);
 })(mjs);

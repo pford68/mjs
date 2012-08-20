@@ -5,6 +5,8 @@
 (function ($) {
 
     $.require("mjs/core/oop");
+    $.require("mjs/core/arrays");
+    $.require("mjs/core/interfaces");
 
     $.util.Stack = $.Class({
         _items: null,
@@ -27,6 +29,10 @@
         peek: function(){
             var items = this._items;
             return items[items.length - 1];
+        },
+        forEach: function(callback){
+            this._items.forEach(callback);
+            return this;
         }
-    })
+    }).implement($.Iterable);
 })(mjs);
