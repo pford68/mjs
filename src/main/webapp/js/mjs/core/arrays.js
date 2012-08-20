@@ -345,6 +345,26 @@
          */
         last: function(){
             return this[this.length - 1];
+        },
+
+
+        /**
+         * <p>Converts an array of Strings to an object for fast lookup.  Each item in the array becomes
+         * both the key and the value for the corresponding item in the resulting object.  Intended for
+         * use with String arrays.</p>
+         *
+         * <p>This is probably only needed if you have to lookup items several times on the same array.  If you
+         * only have to do one lookup, just use indexOf(), using the returned index to get the list item.</p>
+         *
+         * @return {Object} The "set" of Strings, each of which is both a key and a value.
+         */
+        toSet: function(){
+            var that = {};
+            this.forEach(function(item){
+                var hash = item.hash ? item.hash() : item.valueOf();
+                that[hash] = item;
+            });
+            return that;
         }
 
     };
