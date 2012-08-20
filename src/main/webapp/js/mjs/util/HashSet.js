@@ -3,6 +3,7 @@
 
     $.require("mjs/core/oop");
     $.require("mjs/core/ObjectDecorator");
+    $.require("mjs/core/interfaces");
 
     $.util.HashSet = $.Class({
 
@@ -27,7 +28,10 @@
         },
         contains: function(that){
             return this._items.contains(that);
+        },
+        size: function(){
+            return this._items.size();
         }
-    });
+    }).implement($.Iterable);
 
 })(mjs);
