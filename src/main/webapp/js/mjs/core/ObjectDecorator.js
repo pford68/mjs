@@ -287,6 +287,22 @@
                 }
             }
             return false;
+        },
+
+
+        add: function(key, value){
+            this.component[key] = value;
+            return this;
+        },
+
+        remove: function(key){
+            var result = this.component[key];
+            delete this.component[key];
+            return result;
+        },
+
+        getComponent: function(){
+            return this.component;
         }
     });
 
