@@ -299,10 +299,6 @@
             var result = this.component[key];
             delete this.component[key];
             return result;
-        },
-
-        getComponent: function(){
-            return this.component;
         }
     });
 
