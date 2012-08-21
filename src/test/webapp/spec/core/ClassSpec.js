@@ -211,7 +211,7 @@ describe("mjs.Class() suite", function() {
     });
 
 
-    describe("Any property whose name is all upper case should be a constant", function(){
+    describe("Any property whose name is all upper case should be a constant and static", function(){
         var WTF = $.Class({
             FIRST_ORDERED_NODE_TYPE: 'H1',
             CLASSNAME: 'wtf',
@@ -230,21 +230,21 @@ describe("mjs.Class() suite", function() {
 
         it("should be immutable", function(){
             expect(56).toEqual(instance.size);
-            expect('H1').toEqual(instance.FIRST_ORDERED_NODE_TYPE);
+            expect('H1').toEqual(WTF.FIRST_ORDERED_NODE_TYPE);
 
-            instance.CLASSNAME = "Huh?";
-            expect('wtf').toEqual(instance.CLASSNAME);
+            WTF.CLASSNAME = "Huh?";
+            expect('wtf').toEqual(WTF.CLASSNAME);
 
             var another = new WTF({ FIRST_ORDERED_NODE_TYPE: 'table' });
-            expect('H1').toEqual(another.FIRST_ORDERED_NODE_TYPE);
+            expect('H1').toEqual(WTF.FIRST_ORDERED_NODE_TYPE);
         });
 
         it("should not be deletable", function(){
-            delete instance.FIRST_ORDERED_NODE_TYPE;
-            expect('H1').toEqual(instance.FIRST_ORDERED_NODE_TYPE);
+            delete WTF.FIRST_ORDERED_NODE_TYPE;
+            expect('H1').toEqual(WTF.FIRST_ORDERED_NODE_TYPE);
 
-            delete instance.CLASSNAME;
-            expect('wtf').toEqual(instance.CLASSNAME);
+            delete WTF.CLASSNAME;
+            expect('wtf').toEqual(WTF.CLASSNAME);
         });
 
         /*  No longer added constants to the prototype.

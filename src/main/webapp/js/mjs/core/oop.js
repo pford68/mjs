@@ -213,13 +213,6 @@
             to the prototype of the new class.
             */
             if (arguments.length == 0 || arguments[0] !== inherit) {
-                // This loop is unfortunate, but the writable: false configuration was not applied to instances
-                // made from the prototype in Chrome.
-                for (var i in constants){
-                    if (constants.hasOwnProperty(i)){
-                        $.constant(i, constants[i], this);
-                    }
-                }
                 init.apply(this, arguments);
             }
 
@@ -256,7 +249,7 @@
                 }
                 // Handle constants
                 else if (i.isUpperCase()){
-                    //$.constant(i, arg, c.prototype);  // In chrome, I have to do this for each instance as well.
+                    $.constant(i, arg, c);
                     constants[i] = arg;
                     delete args[i];
                 }
