@@ -213,6 +213,8 @@
             to the prototype of the new class.
             */
             if (arguments.length == 0 || arguments[0] !== inherit) {
+                // This loop is unfortunate, but the writable: false configuration was not applied to instances
+                // made from the prototype in Chrome.
                 for (var i in constants){
                     if (constants.hasOwnProperty(i)){
                         $.constant(i, constants[i], this);
