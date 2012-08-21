@@ -85,6 +85,5 @@
         return Object.freeze(new Factory());
     };
 
-    Object.defineProperty($, "ObjectFactory", { configurable: false, writable: false });
 
 })(mjs);
