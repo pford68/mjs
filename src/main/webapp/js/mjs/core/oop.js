@@ -213,6 +213,11 @@
             to the prototype of the new class.
             */
             if (arguments.length == 0 || arguments[0] !== inherit) {
+                for (var i in constants){
+                    if (constants.hasOwnProperty(i)){
+                        $.constant(i, constants[i], this);
+                    }
+                }
                 init.apply(this, arguments);
             }
 
@@ -234,14 +239,14 @@
             return c;
         };
 
-        var arg, _p = {};
-        for (var i in args){
-            if (args.hasOwnProperty(i)){
-                arg = args[i];
+        var arg, _p = {}, constants = {}, _args = $.extend({}, args);
+        for (var i in _args){
+            if (_args.hasOwnProperty(i)){
+                arg = _args[i];
                 // Handle private properties
                 if (i.startsWith("_")){
                     _p[i] = arg;
-                    delete args[i];  // TODO: move this out of the loop.
+                    delete args[i];
                 }
                 // Tell each method its own name
                 else if ($.isFunction(arg)){
@@ -249,7 +254,9 @@
                 }
                 // Handle constants
                 else if (i.isUpperCase()){
-                    $.constant(i, arg, c.prototype);
+                    $.constant(i, arg, c.prototype);  // In chrome, I have to do this for each instance as well.
+                    constants[i] = arg;
+                    delete args[i];
                 }
             }
         }

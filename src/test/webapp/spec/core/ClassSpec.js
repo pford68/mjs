@@ -223,6 +223,7 @@ describe("mjs.Class() suite", function() {
         });
         var instance;
 
+
         beforeEach(function(){
             instance = new WTF({ id: '3467', size: 56 });
         });
@@ -233,8 +234,6 @@ describe("mjs.Class() suite", function() {
 
             instance.CLASSNAME = "Huh?";
             expect('wtf').toEqual(instance.CLASSNAME);
-
-            $.log("constants in $.Class").log(instance);
 
             var another = new WTF({ FIRST_ORDERED_NODE_TYPE: 'table' });
             expect('H1').toEqual(another.FIRST_ORDERED_NODE_TYPE);
