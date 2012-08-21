@@ -22,7 +22,7 @@
         $config = $.config || {},
         pattern = "[{src}] {msg}",
         dateFormat = "yy-MM-dd HH:mm:ss.s",
-        ObjectFactory = $.ObjectFactory,
+        ObjectFactory = $.getFactory,
         LOG_LEVELS = Object.freeze({ ERROR: 1, WARN: 2, INFO: 3, DEBUG: 4, LOG: 5, TRACE: 6, ASSERT: 7 }),
         logging = $.logging,
         ILogger = logging.ILogger;

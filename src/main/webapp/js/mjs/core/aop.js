@@ -121,7 +121,7 @@
 		}
 	};
 
-    var Advice = $.ObjectFactory(blueprint);
+    var Advice = $.getFactory(blueprint);
 
 
     /**

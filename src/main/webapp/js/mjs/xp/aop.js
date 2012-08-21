@@ -108,7 +108,7 @@
 		}
 	};
 
-    var Advice = $.ObjectFactory(blueprint);
+    var Advice = $.getFactory(blueprint);
 
 
     $.addAdvice = function(adviser, method){

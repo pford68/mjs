@@ -5,7 +5,7 @@
 (function($) {
     $.require("mjs/xp/ObjectFactory");
 
-    $.Exception = $.ObjectFactory(new Error(), {
+    $.Exception = $.getFactory(new Error(), {
         name: 'Exception',
         src: {
             get: function(){ return arguments.callee.caller.name }

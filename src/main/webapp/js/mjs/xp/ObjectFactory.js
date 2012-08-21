@@ -16,15 +16,15 @@
      * @return {*}
      * @constructor
      */
-    $.ObjectFactory = function(blueprint, config){
+    $.getFactory = function(blueprint, config){
         config = config || { };
         blueprint = $.clone(blueprint);  // Once the blueprint is set, I don't want people to change it.
                                          // Object.freeze() may work here too.
         if (config.writable != null && (config.set || config.get )){
-            $.log("ObjectFactory", "The property descriptors writable and get/set are incompatible; ObjectFactory deleted writable from the configuration.");
+            $.log("getFactory", "The property descriptors writable and get/set are incompatible; ObjectFactory deleted writable from the configuration.");
         }
         blueprint = config ? Object.create(blueprint, config) : Object.create(blueprint);
-        $.log("ObjectFactory", "blueprint:").log(blueprint);
+        $.log("getFactory", "blueprint:").log(blueprint);
 
         /**
          * Creates a new object created according to the <strong>initial</strong> blueprint and configuration.
@@ -52,7 +52,7 @@
              * @return {*} A new Factory containing the extended blueprint.
              */
             extend: function(args, config){
-                return $.ObjectFactory($.extend({}, blueprint, args), config);
+                return $.getFactory($.extend({}, blueprint, args), config);
             },
 
             /**
@@ -74,7 +74,7 @@
             $super: function(name, scope){
                 var p = blueprint[name];
                 if ($.isFunction(p)) {
-                    if (!scope) $.error("ObjectFactory.$super", "A scope is required when the $super property is a function.");
+                    if (!scope) $.error("getFactory.$super", "A scope is required when the $super property is a function.");
                     return $.proxy(scope, p);
                 }
                 if ($.isObject(p, true)) return $.extend({}, p);

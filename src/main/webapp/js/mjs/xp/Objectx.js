@@ -11,6 +11,6 @@
         compareTo: function(){}
     };
 
-    $.ObjectX = $.ObjectFactory(blueprint);
+    $.ObjectX = $.getFactory(blueprint);
 
 })(mjs);
