@@ -256,7 +256,7 @@
                 }
                 // Handle constants
                 else if (i.isUpperCase()){
-                    $.constant(i, arg, c.prototype);  // In chrome, I have to do this for each instance as well.
+                    //$.constant(i, arg, c.prototype);  // In chrome, I have to do this for each instance as well.
                     constants[i] = arg;
                     delete args[i];
                 }

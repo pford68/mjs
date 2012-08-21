@@ -247,6 +247,7 @@ describe("mjs.Class() suite", function() {
             expect('wtf').toEqual(instance.CLASSNAME);
         });
 
+        /*  No longer added constants to the prototype.
         it("should not be deletable/editable from the prototype either", function(){
             delete WTF.prototype.FIRST_ORDERED_NODE_TYPE;
             expect('H1').toEqual(WTF.prototype.FIRST_ORDERED_NODE_TYPE);
@@ -257,6 +258,7 @@ describe("mjs.Class() suite", function() {
             WTF.prototype.CLASSNAME = "A";
             expect('wtf').toEqual(WTF.prototype.CLASSNAME);
         });
+        */
     });
 
 
