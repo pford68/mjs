@@ -10,7 +10,7 @@ describe("mjs.ObjectFactory", function(){
         compareTo: function(){}
     };
 
-    var ObjectX = $.ObjectFactory(blueprint);
+    var ObjectX = $.getFactory(blueprint);
 
     it("should return a Factory", function(){
         expect(ObjectX.build).toBeDefined();
