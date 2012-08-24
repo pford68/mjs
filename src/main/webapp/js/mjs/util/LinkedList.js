@@ -4,7 +4,6 @@
     $.require("mjs/core/oop");
     $.require("mjs/core/interfaces");
 
-    $.ListIterator = $.Iterator.extend("getCurrentIndex");
 
     function insertLink(that, previous, next){
         previous.next = that;
