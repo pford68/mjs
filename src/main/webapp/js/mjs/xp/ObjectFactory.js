@@ -39,8 +39,7 @@
              * @return {Object} An object
              */
             build: function(args){
-                var spec = args ? $.extend({}, blueprint, args) : blueprint;
-                return Object.create(spec);
+                return args ? Object.create($.extend({}, blueprint, args)) : Object.create(blueprint);
             },
 
             /**
