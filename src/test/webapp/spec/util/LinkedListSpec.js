@@ -64,10 +64,9 @@ describe("mjs.util.LinkedList", function(){
 
 
     describe("forEach()", function(){
-        var RightIterator = $.util.LinkedList.iterators.Right;
 
         afterEach(function(){
-            list.setIterator($.util.LinkedList.iterators.Left);
+            list.forward();
         });
 
         it("should iterate through the list, using the assigned iterator, executing a function on each item", function(){
@@ -105,7 +104,7 @@ describe("mjs.util.LinkedList", function(){
             list.add(cars[6]);
 
             var models = [];
-            list.setIterator(RightIterator).forEach(function(item){
+            list.backward().forEach(function(item){
                 models.push(item.value.model);
             });
             expect(models.length).toEqual(5);
