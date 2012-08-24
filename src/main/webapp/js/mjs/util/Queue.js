@@ -13,7 +13,7 @@
             this._items = [];
         },
         enqueue: function(that){
-            this._items.push(that);
+            this._items.unshift(that);
             return this;
         },
         dequeue: function(){

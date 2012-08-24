@@ -61,15 +61,15 @@
 
 
         Object.defineProperty(that, k, {
-            get: function(){
-                var caller = arguments.callee.caller;
+            get: function _getPrivateProperty(){
+                var caller = $.getCaller(_getPrivateProperty, arguments);
                 if (contains(that, caller)){
                     return _p;
                 }
                 throw new Error(errorMsg.replaceArgs(k, className || ""));
             },
-            set: function(value){
-                var caller = arguments.callee.caller;
+            set: function _setPrivateProperty(value){
+                var caller = $.getCaller(_setPrivateProperty, arguments);
                 if (contains(that, caller)){ // Using the "in" operator did not work
                     _p = value;
                 } else {
@@ -85,9 +85,9 @@
 
     //============================================================= Public members
 
-    $.Interface = function()
+    $.Interface = function _Interface()
     {
-        var caller = $.getCaller(arguments.callee);
+        var caller = $.getCaller(_Interface, arguments).name;
         function Interface(a)
         {
             this.methods = {};
@@ -218,8 +218,8 @@
 
 
             // Abstract classes cannot be instantiated.
-            if (this.interfaces) {
-                $Object.implement.apply($Object, [this].concat(this.interfaces));
+            if (this._interfaces.length > 0) {
+                $Object.implement.apply($Object, [this].concat(this._interfaces));
             }
 
         };
@@ -230,7 +230,7 @@
         }
 
         c.implement = function(){
-            c.prototype.interfaces = $.toArray(arguments);
+            c.prototype._interfaces = $.toArray(arguments);
             return c;
         };
 
@@ -255,6 +255,8 @@
                 }
             }
         }
+        args._interfaces = [];
+
 
         // The following mixins are meant to be superseded by
         // (i.e., overridden by) corresponding properties in args.
@@ -352,7 +354,7 @@
          * @param obj
          * @param $interface
          */
-        implement: function(obj, $interface /* ,... */)
+        implement: function _implements(obj, $interface /* ,... */)
         {
             function _implement(obj, $$interface)
             {
@@ -372,7 +374,7 @@
                 obj.interfaces[obj.interfaces.length] = $$interface; // Adding an array property "interfaces" to obj to store the interfaces implemented.
             }
 
-            var caller = $.getCaller(arguments.callee);
+            var caller = $.getCaller(_implements, arguments).name;
             for (var i = 1, len = arguments.length; i < len; i++)
             {
                 _implement(obj, arguments[i]);

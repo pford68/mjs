@@ -334,7 +334,30 @@ describe("MJS Core Functions", function(){
             expect($.toArray({ initValue: "A", getValue: function(){ return this.initValue; } }).constructor === Array).toBeTruthy();
             expect($.toArray(new Date()).constructor === Array).toBeTruthy();
             expect($.toArray([]).constructor === Array).toBeTruthy();
-        })
+        });
+
+        it("should convert the Arguments object to an Array containing the same arguments in the same order", function(){
+            function test(){
+                var args = $.toArray(arguments);
+                expect(Array.isArray(args)).toBeTruthy();
+                expect(args[0]).toEqual('A');
+                expect(args[1]).toEqual(5);
+                expect(args[2]).toEqual(that);
+                expect(args.length).toEqual(3);
+            }
+
+            var that = { init: function(){} };
+            test('A', 5, that);
+        });
+
+        it("should convert Strings to arrays, even though they already are sequences", function(){
+            var s = "This is a String.";
+            var list= $.toArray(s);
+            expect(Array.isArray(list)).toBeTruthy();
+            expect(list.length).toEqual(17);
+            expect(list.size()).toEqual(17);
+            expect(list.concat([1,7]).join("")).toEqual("This is a String.17");
+        });
     });
 
 

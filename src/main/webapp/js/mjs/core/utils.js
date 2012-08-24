@@ -54,8 +54,8 @@
 
 
 
-        getCaller: function(callee){
-            return callee && callee.caller ? callee.caller.name : "unnamed function";
+        getCaller: function(f, args){
+            return f.caller || (arguments.callee ? arguments.callee.caller : { name: 'anonymous caller' } );
         }
     };
 
