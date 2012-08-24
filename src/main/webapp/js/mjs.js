@@ -559,12 +559,15 @@ var mjs = mjs || {};
          * @param method
          */
         proxy: function(obj, method) {
-            var fcn = obj[method];
+            var fcn = obj[method], defaults;
             if (!fcn){
                 $public.error("$.proxy","fcn is null for method = " + method);     // TODO:  consider externalizing error messages.
             }
+            if (arguments.length > 2){
+                defaults = $public.toArray(arguments).slice(2);
+            }
             return function() {
-                return fcn.apply(obj, arguments);
+                return fcn.apply(obj, defaults ? defaults.concat($public.toArray(arguments)) : arguments);
             }
         },
 
@@ -663,7 +666,9 @@ var mjs = mjs || {};
     });
 
     //================================================== Imports
-    $public.require("mjs/core/strings");     // Minimize this file's dependencies from now on.
+    // Minimize this file's dependencies from now on.
+    $public.require("mjs/core/strings");
+    $public.require("mjs/core/ObjectDecorator");
     $public.require("mjs/i18n/" + $config.locale);
     // TODO:  Prevent core modules from depending on modules in other packages.
 
