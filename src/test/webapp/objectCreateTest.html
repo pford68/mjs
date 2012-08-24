@@ -51,7 +51,9 @@
 
 
     $.log("New o").log(Object.create(o));    // Object { src="A-OK", message = "Huh?"}
-    var b = Object.create(o);
+    var b = Object.create(o, {
+        test: { value: "OK", writable: false, enumerable: true }
+    });
     b.src="WTF?";
     $.log("Object B, inherits from o").log(b);  // Object { src="A-WTF?", message = "Huh?"}
 
