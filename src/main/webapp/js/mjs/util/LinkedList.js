@@ -48,6 +48,9 @@
         reset: function(){
             this.currentIndex = -1;
             this.current = { next: this.parent.peekFirst() };
+        },
+        getCurrentIndex: function(){
+            return this.currentIndex;
         }
     });
 
@@ -68,6 +71,9 @@
             var p = this.parent;
             this.currentIndex = p.size();
             this.current = { previous: p.peekLast() };
+        },
+        getCurrentIndex: function(){
+            return this.currentIndex;
         }
     });
 
@@ -252,7 +258,7 @@
              */
             var it = new this._iterator(this);
             while(it.hasNext()){
-                callback(it.next(), it.currentIndex, this);
+                callback(it.next(), it.getCurrentIndex(), this);
             }
         },
         /**
@@ -260,7 +266,7 @@
          * @param iterator
          */
         setIterator: function(iterator){
-            Object.implement(iterator.prototype, $.Iterator);
+            Object.implement(iterator.prototype, $.ListIterator);
             this._iterator = iterator;
             return this;
         },
@@ -287,10 +293,12 @@
 
 
 
-    $.extend(LinkedList, {
+    $.extend({
         iterators: {
-            Left: Iterator,
-            Right: ReverseIterator
+            LinkedList: {
+                Left: Iterator,
+                Right: ReverseIterator
+            }
         }
     });
 

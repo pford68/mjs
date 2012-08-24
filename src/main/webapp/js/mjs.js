@@ -525,28 +525,26 @@ var mjs = mjs || {};
 
         /**
          * <p>
-         * Converts an Object, not merely a NodeList, to an Array--as one might expect $.makeArray() to do.
+         * Converts an Object, not merely a NodeList, to an Array--as one might expect jQuery.makeArray() to do.
          * The values of properties <strong>declared in the object, not inherited,</strong> become elements of the array.
          * </p>
          *
-         * @param obj A pure Object
+         * @param that A pure Object
          */
-        toArray: function(obj) {
-            if (!obj) return [];  // Return nulls as empty arrays
-            if ($.isArray(obj)) return obj;   // Return arrays as is.
+        toArray: function(that) {
+            if ($public.isEmpty(that)) return [];  // Return nulls as empty arrays
+            if ($public.isArray(that)) return that;   // Return arrays as is.
 
-            var result = [], length = (obj.length || 0);
+            var result = [], length = (that.length || 0);
             // Handling the arguments object as well as strings
-            if (length > 0) {
-                result = new Array(length);
-                while (length--) result[length] = obj[length];
-                return result;
+            if (that.length > 0) {
+                return Array.prototype.slice.call(that);
             }
 
             // Handling all other objects
-            if (obj != null) {
-                for (var i in obj) {
-                    if (obj.hasOwnProperty(i)) result[result.length] = obj[i];
+            if (that != null) {
+                for (var i in that) {
+                    if (that.hasOwnProperty(i)) result[result.length] = that[i];
                 }
             }
             return result;

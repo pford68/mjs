@@ -334,7 +334,30 @@ describe("MJS Core Functions", function(){
             expect($.toArray({ initValue: "A", getValue: function(){ return this.initValue; } }).constructor === Array).toBeTruthy();
             expect($.toArray(new Date()).constructor === Array).toBeTruthy();
             expect($.toArray([]).constructor === Array).toBeTruthy();
-        })
+        });
+
+        it("should convert the Arguments object to an Array containing the same arguments in the same order", function(){
+            function test(){
+                var args = $.toArray(arguments);
+                expect(Array.isArray(args)).toBeTruthy();
+                expect(args[0]).toEqual('A');
+                expect(args[1]).toEqual(5);
+                expect(args[2]).toEqual(that);
+                expect(args.length).toEqual(3);
+            }
+
+            var that = { init: function(){} };
+            test('A', 5, that);
+        });
+
+        it("should convert Strings to arrays, even though they already are sequences", function(){
+            var s = "This is a String.";
+            var list= $.toArray(s);
+            expect(Array.isArray(list)).toBeTruthy();
+            expect(list.length).toEqual(17);
+            expect(list.size()).toEqual(17);
+            expect(list.concat([1,7]).join("")).toEqual("This is a String.17");
+        });
     });
 
 
@@ -690,7 +713,32 @@ describe("MJS Core Functions", function(){
 
 
     describe("proxy()", function(){
-        //document.body.appendChild()
+        function MyGreatClass(){
+            this.subscribers = [];
+        }
+        $.extend(MyGreatClass.prototype,{
+            addSubscriber: function(that){ this.subscribers.push(that); },
+            add: function(a,b){ return a + b }
+        });
+
+        var instance;
+
+        beforeEach(function(){
+            instance = new MyGreatClass();
+        });
+
+        it("should bind the named method to the specified object so that \"this\" refers to the specified object within the method", function(){
+            var addSubscriber = $.proxy(instance, "addSubscriber");
+            expect(0).toEqual(instance.subscribers.length); // A control
+            addSubscriber(function listen(){});
+            expect(1).toEqual(instance.subscribers.length);
+        });
+
+        it("should create partial functions when the arguments length exceeds 2", function(){
+            var add = $.proxy(instance, "add", 6);
+            expect(add(4)).toEqual(10);
+            expect(add(-7)).toEqual(-1);
+        });
     });
 
     describe("clone()", function(){
