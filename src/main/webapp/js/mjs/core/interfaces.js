@@ -54,4 +54,11 @@
      */
     $.Singleton = $.Interface("getInstance");
 
+    /**
+     *
+     * @name ListIterator
+     * @class Implemented by lists that use iterators and want to send index of the next item to callbacks
+     */
+    $.ListIterator = $.Iterator.extend("getCurrentIndex");
+
 })(mjs);
