@@ -713,7 +713,32 @@ describe("MJS Core Functions", function(){
 
 
     describe("proxy()", function(){
-        //document.body.appendChild()
+        function MyGreatClass(){
+            this.subscribers = [];
+        }
+        $.extend(MyGreatClass.prototype,{
+            addSubscriber: function(that){ this.subscribers.push(that); },
+            add: function(a,b){ return a + b }
+        });
+
+        var instance;
+
+        beforeEach(function(){
+            instance = new MyGreatClass();
+        });
+
+        it("should bind the named method to the specified object so that \"this\" refers to the specified object within the method", function(){
+            var addSubscriber = $.proxy(instance, "addSubscriber");
+            expect(0).toEqual(instance.subscribers.length); // A control
+            addSubscriber(function listen(){});
+            expect(1).toEqual(instance.subscribers.length);
+        });
+
+        it("should create partial functions when the arguments length exceeds 2", function(){
+            var add = $.proxy(instance, "add", 6);
+            expect(add(4)).toEqual(10);
+            expect(add(-7)).toEqual(-1);
+        });
     });
 
     describe("clone()", function(){
