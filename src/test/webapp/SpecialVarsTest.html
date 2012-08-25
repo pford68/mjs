@@ -12,13 +12,6 @@
 (function($){
     $.require("mjs/xp/SpecialVars");
 
-    var a, b;
-    function testDestructuring(){
-        return [1,2,3];
-    }
-    [a,b] = testDestructuring();
-    $.log("Destructuring").log(b);
-
     function test(){
         $_ = function(item){ return item + "!"};
         $.log("test").log($_[0]);
@@ -39,6 +32,7 @@
     add(34, 2);
     test("It works");
     noTransform(4,5)
+
 })(mjs);
 </script>
 </html>

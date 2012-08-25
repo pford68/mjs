@@ -406,14 +406,17 @@
          *
          * @param {String} prop  The name of the property to make private.
          * @param {Object} that  The object that the property belongs to.
-         * @param {Boolean} createAccessors  Whether to create public getter/setter methods, defaults to false.
+         * @param {Object} options  Whether to create public getter/setter methods, defaults to false.
          */
-        encapsulate: function(prop, that, createAccessors){
+        encapsulate: function(prop, that, options){
             var value = that[prop], pName = prop.capitalize();
             delete that[prop];
-            if (createAccessors){
-                that["get" + pName] = function(){ return that[prop]};
+            options = options || {};
+            if (options.addSetter === true){
                 that["set" + pName] = function(value){ that[prop] = value; };
+            }
+            if (options.addGetter === true){
+                that["get" + pName] = function(){ return that[prop] };
             }
             _private(that, prop, value, that._className)
         }

@@ -9,7 +9,7 @@ describe("Observer (Publish/Subscribe) Framework", function(){
     publisher = new $.Publisher();
 
     beforeEach(function(){
-        publisher.subscribers = [];
+        publisher.clear();
         increment = function(){ ++result; };
             cube = function(){ result *= 3 };
         append = function(data) { result += data };
@@ -32,17 +32,17 @@ describe("Observer (Publish/Subscribe) Framework", function(){
         });
 
         it("should add the current function to the list of subscribers for the specified Publisher", function(){
-            expect(publisher.subscribers.length).toEqual(2);    // A control
+            expect(publisher.getSubscribers().length).toEqual(2);    // A control
 
             function test(){}
             test.subscribe(publisher);
-            expect(publisher.subscribers.length).toEqual(3);
+            expect(publisher.getSubscribers().length).toEqual(3);
         });
 
         it("should not allow the same function to subscribe more than once", function(){
-            expect(publisher.subscribers.length).toEqual(2);    // A control
+            expect(publisher.getSubscribers().length).toEqual(2);    // A control
             cube.subscribe(publisher);
-            expect(publisher.subscribers.length).toEqual(2);
+            expect(publisher.getSubscribers().length).toEqual(2);
         });
     });
 
@@ -54,10 +54,10 @@ describe("Observer (Publish/Subscribe) Framework", function(){
 
         it("should remove the current function from the list of subscribers for the specified Publisher", function(){
             increment.unsubscribe(publisher);
-            expect(publisher.subscribers.length).toEqual(1);
+            expect(publisher.getSubscribers().length).toEqual(1);
 
             cube.unsubscribe(publisher);
-            expect(publisher.subscribers.length).toEqual(0);
+            expect(publisher.getSubscribers().length).toEqual(0);
         });
     });
 

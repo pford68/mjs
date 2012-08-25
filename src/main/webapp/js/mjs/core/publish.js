@@ -12,46 +12,55 @@
 
 
     Function.prototype.subscribe = function(publisher) {
-        if (Object.isa(publisher, $.Publisher)) {
-            var instance = this, exists;
-            exists = publisher.subscribers.some(function(fn) {
-                return (fn === instance);
-            });
-            if (!exists) {
-                publisher.subscribers.push(this);
-            }
-        }
+        publisher.add(this);
         return this; // for chaining
     };
 
 
     Function.prototype.unsubscribe = function(publisher) {
-        if (Object.isa(publisher, $.Publisher)) {
-            var instance = this;
-            publisher.subscribers = publisher.subscribers.filter(function(fn) {
-                if (fn !== instance) {
-                    return fn;
-                }
-            });
-        }
+        publisher.remove(this);
         return this;  // for chaining
     };
 
-
-    Publisher = $.Class({
-        subscribers: null,
-        initialize: function() {
-            this.subscribers = [];
-        },
-        publish: function() {
-            var args = arguments;
-            //$.log("publish").log(args);
-            this.subscribers.forEach(function(fn) {
-                fn.apply(null, args);
-            });
-            return this; // for chaining
+    Publisher = (function(){
+        function _Publisher(){
+            this.clear();
         }
-    });
+        $.extend(_Publisher.prototype, {
+            publish: function() {
+                var args = arguments;
+                //$.log("publish").log(args);
+                this._subscribers.forEach(function(fn) {
+                    fn.apply(null, args);
+                });
+                return this; // for chaining
+            },
+            getSubscribers: function(){
+                return this._subscribers;
+            },
+            clear: function(){
+                this._subscribers = [];
+                return this;
+            },
+            add: function(subscriber){
+                if (!this._subscribers.contains(subscriber)){
+                    this._subscribers.push(subscriber);
+                }
+            },
+            remove: function(subscriber){
+                this._subscribers = this._subscribers.filter(function(fn) {
+                    if (fn !== subscriber) {
+                        return fn;
+                    }
+                });
+            }
+        });
+        //Object.encapsulate("_subscribers", _Publisher.prototype);   // TODO:  test performance and memory usage.
+        return _Publisher;
+    })();
+
+
+
 
     //========================================= For subscribing/publishing through topics.
     var map = {};

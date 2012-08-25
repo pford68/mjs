@@ -32,11 +32,12 @@
 
 </head>
 <body>
-<iframe id="xss_frame" src="frame_src.html" width="1" height="1" style="visibility: hidden"></iframe>
 <script type="text/javascript">
   jasmine.getEnv().addReporter(new jasmine.TrivialReporter());
   jasmine.getEnv().execute();
 </script>
 
+<iframe id="xss_frame" src="frame_src.html" width="1" height="1" style="visibility: hidden"></iframe>
+<iframe id="doc_frame" src="domTest.html" width="1" height="1" style="visibility: hidden"></iframe>
 </body>
 </html>

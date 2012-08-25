@@ -1,7 +1,9 @@
 describe("MJS Core Functions", function(){
 
     var $ = mjs, frameLoaded = false;
-    
+
+
+
     beforeEach(function(){
         $.setDebugEnabled(true);
     });
@@ -701,15 +703,76 @@ describe("MJS Core Functions", function(){
     });
 
 
+    describe("DOM Functions in mjs.js", function(){
+        var xmlString = '<fetch version="1.0" output-format="xml-platform" mapping="logical" distinct="false">' +
+            '<entity name="contact">' +
+            '<attribute name="address1_stateorprovince" />' +
+            '<attribute name="new_source" />' +
+            '<attribute name="ownerid" />' +
+            '<attribute name="new_organization" />' +
+            '<attribute name="new_organization" />' +
+            '</entity></fetch>';
 
-    describe("isNode()", function(){
 
+        var doc = new DOMParser().parseFromString(xmlString, "text/xml");
+
+        describe("isNode()", function(){
+
+            it("should return true for HTML elements", function(){
+                expect($.isNode(document.body)).toBeTruthy();
+                expect($.isNode(document.createElement("table"))).toBeTruthy();
+            });
+
+            it("should return true for XML elements", function(){
+                expect($.isNode(doc.getElementsByTagName("fetch")[0])).toBeTruthy();
+                expect($.isNode(doc.getElementsByTagName("entity")[0])).toBeTruthy();
+                for (var i = 0; i < 5; ++i){
+                    expect($.isNode(doc.getElementsByTagName("attribute")[i])).toBeTruthy();
+                }
+
+            });
+
+            it("should return true for text nodes", function(){
+                expect($.isNode(document.createTextNode("OK"))).toBeTruthy();
+            });
+
+            it("should return false for functions, arrays, object literals and primitives", function(){
+                expect($.isNode(3)).toBeFalsy();
+                expect($.isNode({})).toBeFalsy();
+                expect($.isNode([])).toBeFalsy();
+                expect($.isNode(function(){})).toBeFalsy();
+            });
+        });
+
+
+
+        describe("isElement()", function(){
+
+            it("should return true for HTML elements", function(){
+                expect($.isElement(document.body)).toBeTruthy();
+                expect($.isElement(document.getElementsByTagName("script")[0])).toBeTruthy();
+                expect($.isElement(document.createElement("table"))).toBeTruthy();
+            });
+
+            it("should return false for XML nodes", function(){
+                expect($.isElement(doc.getElementsByTagName("fetch")[0])).toBeTruthy();
+            });
+
+
+            it("should return false for text nodes", function(){
+                expect($.isElement(document.createTextNode("OK"))).toBeFalsy();
+            });
+
+            it("should return false for functions, arrays, object literals and primitives", function(){
+                expect($.isElement(3)).toBeFalsy();
+                expect($.isElement({})).toBeFalsy();
+                expect($.isElement([])).toBeFalsy();
+                expect($.isElement(function(){})).toBeFalsy();
+            });
+
+        });
     });
 
-
-    describe("isElement()", function(){
-
-    });
 
 
     describe("proxy()", function(){
