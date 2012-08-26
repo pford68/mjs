@@ -14,7 +14,7 @@
     $.module("mjs/logging");
     $.require("mjs/core/strings");
     $.require("mjs/xp/logging/interfaces");
-    $.require("mjs/xp/ObjectFactory");
+    $.require("mjs/core/ObjectFactory");
     $.require("mjs/core/oop");
 
 

@@ -2,7 +2,7 @@ describe("mjs.getFactory()", function(){
 
     var $ = mjs;
 
-    $.require("mjs/xp/ObjectFactory");
+    $.require("mjs/core/ObjectFactory");
 
     function getPrototype(that){
         return that.__proto__ || that.getPrototypeOf();
