@@ -555,11 +555,11 @@ var mjs = mjs || {};
          * Returns a standalone function that will be executed in the proper scope, giving "this" the correct
          * meaning within the function.  This was added to JQuery 1.4--i.e. after our current version.
          *
-         * @param obj
-         * @param method
+         * @param {Object} that  The object to bind the method to.
+         * @param {String | Function} method  The method to be bound.
          */
-        proxy: function(obj, method) {
-            var fcn = obj[method], defaults;
+        proxy: function(that, method) {
+            var fcn = $public.isString(method) ? that[method] : method, defaults;
             if (!fcn){
                 $public.error("$.proxy","fcn is null for method = " + method);     // TODO:  consider externalizing error messages.
             }
@@ -567,7 +567,7 @@ var mjs = mjs || {};
                 defaults = $public.toArray(arguments).slice(2);
             }
             return function() {
-                return fcn.apply(obj, defaults ? defaults.concat($public.toArray(arguments)) : arguments);
+                return fcn.apply(that, defaults ? defaults.concat($public.toArray(arguments)) : arguments);
             }
         },
 
@@ -651,22 +651,10 @@ var mjs = mjs || {};
     // Start class loader and set configuration values
     configure();
 
-    // Ensure that certain new browser features exist.
-    $public.augment(Object, {
-        // Object.keys() is used frequently in the framework.
-        keys: function(that){
-            var count = 0;
-            for (var i in that){
-                if (that.hasOwnProperty(i)){
-                    ++count;
-                }
-            }
-            return count;
-        }
-    });
 
     //================================================== Imports
     // Minimize this file's dependencies from now on.
+    $public.require("mjs/core/polyfill");
     $public.require("mjs/core/strings");
     $public.require("mjs/core/ObjectDecorator");
     $public.require("mjs/i18n/" + $config.locale);
