@@ -3,7 +3,7 @@
  * @author Philip Ford
  */
 (function($) {
-    $.require("mjs/xp/ObjectFactory");
+    $.require("mjs/core/ObjectFactory");
     $.require("mjs/xp/exceptions");
 
     // TODO:  i18n messages
