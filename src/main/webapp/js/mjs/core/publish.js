@@ -8,7 +8,7 @@
     $.require("mjs/core/arrays");
     $.require("mjs/core/oop");
 
-    var Publisher, topicObject = {};
+    var topicObject = {};
 
 
     Function.prototype.subscribe = function(publisher) {
@@ -22,42 +22,39 @@
         return this;  // for chaining
     };
 
-    Publisher = (function(){
-        function _Publisher(){
-            this.clear();
-        }
-        $.extend(_Publisher.prototype, {
-            publish: function() {
-                var args = arguments;
-                //$.log("publish").log(args);
-                this._subscribers.forEach(function(fn) {
-                    fn.apply(null, args);
-                });
-                return this; // for chaining
-            },
-            getSubscribers: function(){
-                return this._subscribers;
-            },
-            clear: function(){
-                this._subscribers = [];
-                return this;
-            },
-            add: function(subscriber){
-                if (!this._subscribers.contains(subscriber)){
-                    this._subscribers.push(subscriber);
-                }
-            },
-            remove: function(subscriber){
-                this._subscribers = this._subscribers.filter(function(fn) {
-                    if (fn !== subscriber) {
-                        return fn;
-                    }
-                });
+    function Publisher(){
+        this.clear();
+    }
+    $.extend(Publisher.prototype, {
+        publish: function() {
+            var args = arguments;
+            //$.log("publish").log(args);
+            this._subscribers.forEach(function(fn) {
+                fn.apply(null, args);
+            });
+            return this; // for chaining
+        },
+        getSubscribers: function(){
+            return this._subscribers;
+        },
+        clear: function(){
+            this._subscribers = [];
+            return this;
+        },
+        add: function(subscriber){
+            if (!this._subscribers.contains(subscriber)){
+                this._subscribers.push(subscriber);
             }
-        });
-        //Object.encapsulate("_subscribers", _Publisher.prototype);   // TODO:  test performance and memory usage.
-        return _Publisher;
-    })();
+        },
+        remove: function(subscriber){
+            this._subscribers = this._subscribers.filter(function(fn) {
+                if (fn !== subscriber) {
+                    return fn;
+                }
+            });
+        }
+    });
+    //Object.encapsulate("_subscribers", Publisher.prototype);   // TODO:  test performance and memory usage.
 
 
 
