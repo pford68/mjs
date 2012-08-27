@@ -16,13 +16,15 @@
     $.require("mjs/xp/logging/interfaces");
     $.require("mjs/core/ObjectFactory");
     $.require("mjs/core/oop");
+    $.require("mjs/util/DateFormat");
 
 
     var props, Logger,
         $config = $.config || {},
         pattern = "[{src}] {msg}",
-        dateFormat = "yy-MM-dd HH:mm:ss.s",
+        dateFormat = "yyyy-MM-dd HH:mm:ss.SSS",
         ObjectFactory = $.getFactory,
+        DateFormat = $.util.DateFormat,
         LOG_LEVELS = Object.freeze({ ERROR: 1, WARN: 2, INFO: 3, DEBUG: 4, LOG: 5, TRACE: 6, ASSERT: 7 }),
         logging = $.logging,
         ILogger = logging.ILogger;
@@ -59,7 +61,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.log(msg);
             }
         },
@@ -67,7 +69,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.info(msg);
             }
         },
@@ -75,7 +77,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.error(msg);
             }
         },
@@ -83,7 +85,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.debug(msg);
             }
         },
@@ -91,7 +93,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.warn(msg);
             }
         },
@@ -102,7 +104,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.trace(msg);
             }
         },
@@ -113,7 +115,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
                 logger.caller = arguments.callee.caller.name;
-                logger.dtg = new Date().getTime();
+                logger.datetime = new Date();
                 logger.assert(msg);
             }
         }
@@ -166,7 +168,7 @@
                 '%M': this.subject,
                 '%m': msg,
                 '%C': this.caller,
-                '%d': this.dtg      // TODO:  format date
+                '%d': DateFormat.format(this.datetime, dateFormat)
             };
         //return pattern.applyTemplate(args);
 
@@ -194,7 +196,7 @@
             $.extend(logger, {
                 subject:  (obj && obj.name) ? obj.name : arguments.callee.caller.name,
                 caller: null,
-                dtg: null,
+                datetime: null,
                 fileName: null,
                 logLevel: null
             });
