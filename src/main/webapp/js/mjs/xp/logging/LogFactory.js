@@ -23,7 +23,6 @@
         $config = $.config || {},
         pattern = "[{src}] {msg}",
         dateFormat = "yyyy-MM-dd HH:mm:ss.SSS",
-        ObjectFactory = $.getFactory,
         DateFormat = $.util.DateFormat,
         LOG_LEVELS = Object.freeze({ ERROR: 1, WARN: 2, INFO: 3, DEBUG: 4, LOG: 5, TRACE: 6, ASSERT: 7 }),
         logging = $.logging,
@@ -46,12 +45,13 @@
         return logger.logLevel;
     }
 
+
     /*
-     What's this for, you ask?  If someone wants to use a different logger implementation,
-     he/she need only provide the code he/she is interested in, and this decorator will wrap it within
-     excise code.  That excise code checks the log configuration to determine whether the invoked Logger command
-     is enabled for the Logger instance's class/function/module.  The excise code currently also injects
-     date/time information and the name (if any) of the calling function, but those points may change.
+     If someone wants to use a different logger implementation, he/she need only provide the code
+     he/she is interested in, and this decorator will wrap it within excise code.  That excise code
+     checks the log configuration to determine whether the invoked Logger command is enabled for the
+     Logger instance's class/function/module.  The excise code currently also injects date/time
+     information and the name (if any) of the calling function, but those points may change.
      */
     function LoggingDecorator(logger){
         this.logger = Object.seal(logger);
@@ -122,7 +122,10 @@
     };
 
 
-
+    /*
+    If a Logger object is assigned to $.config.logger, use that Logger;
+    otherwise, use the default console logger.
+     */
     if ($config.logger){
         Logger = $config.logger;
     } else {
@@ -130,6 +133,9 @@
             var c = console[op] ? $.proxy(console, op) : $.proxy(console, "log");
             if (msg != null) c(obj.render(msg));
         }
+        /*
+        The default ConsoleLogger
+         */
         Logger = {
             log: function(msg){
                 if (window["console"]) execute(this, "log", msg);
@@ -184,7 +190,7 @@
     // Create the LogFactory singleton and set the Logger type produced by the factory.
     Object.implement(Logger, ILogger);
     var logger = null;
-    var LogFactory = ObjectFactory({
+    var LogFactory = $.getFactory({
         getLogger: function(obj){
             /*
             Note:  I decided that the Logger should not be a singleton:
