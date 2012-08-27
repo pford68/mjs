@@ -49,6 +49,9 @@
     o.message = "Huh?";
     $.log("The object").log(o);   // Object { src="A-OK", message = "Huh?"}
 
+    delete o.message;
+    $.log("o.message was not configurable and should not be deletable:  " + o.message);
+
 
     $.log("New o").log(Object.create(o));    // Object { src="A-OK", message = "Huh?"}
     var b = Object.create(o, {

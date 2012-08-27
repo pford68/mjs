@@ -83,6 +83,13 @@ var mjs = mjs || {};
             ];
             throw new Error(fatal.join(""));
         }
+
+        $.config = $.config || {};
+        Object.defineProperty($, "config", {
+            configurable: false,
+            writable: true,
+            enumerable: true
+        });
     }
 
     function writeLogMessage(src, msg) {
