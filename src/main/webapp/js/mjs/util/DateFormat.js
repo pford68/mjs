@@ -135,7 +135,7 @@
                         break;
                     case 'y':
                         if (matches.length > 2) strFormatted = $replace(strFormatted, format, /y+/, c.getFullYear(date).toString());
-                        else if (matches != null && matches.length > 0) format = $replace(strFormatted, format, /y{1,2}/, (c.getFullYear(date) % 100).toString());
+                        else if (matches != null && matches.length > 0) strFormatted = $replace(strFormatted, format, /y+/, (c.getFullYear(date) % 100).toString());
                         break;
                     case 'w': break;
                     case 'W': break;
