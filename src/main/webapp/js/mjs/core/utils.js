@@ -8,6 +8,12 @@
 
     var CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''); // chars to use.
 
+    function S4() {
+        return { quad: (((1+Math.random())*0x10000)|0).toString(16).substring(1) };
+    }
+
+
+
 
     var utils = {
         /**
@@ -17,10 +23,6 @@
          * @return {*}
          */
         GUID: function(){
-            function S4() {
-                return { quad: (((1+Math.random())*0x10000)|0).toString(16).substring(1) };
-            }
-
             return "{quad}{quad}-{quad}-{quad}-{quad}-{quad}{quad}{quad}".applyTemplate(S4());
         },
 
