@@ -181,7 +181,7 @@ var mjs = mjs || {};
             suppress: suppress,
             success: function(response) {
                 if ($lm[module]) return;      // PF (2011/06/02):  Preventing duplicate evals.  Why they occur is unknown.
-                $lm[module] = resource;       // PF (2012/07.24):  Between these first two lines is an opportunity for a module to be executed twice.
+                $lm[module] = resource;       // PF (2012/07/24):  Between these first two lines is an opportunity for a module to be executed twice.
 
                 /*
                 Wrapping the returned script within a module enables some cool features:
@@ -191,8 +191,8 @@ var mjs = mjs || {};
                     helps with logging, among other things.
                 */
                 (function($){
-                    var mjs, $this;  // Note: $this will be available to imported modules iff they take a $this parameter.
-                    $this = {
+                    var mjs, self;  // Note: self will be available to imported modules iff they take a $this parameter.
+                    self = {
                         name: module
                     };
                     mjs = $;
