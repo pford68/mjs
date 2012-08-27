@@ -1,4 +1,5 @@
 /**
+ * Less-commonly used functions.
  *
  * @author Philip Ford
  */
@@ -56,6 +57,27 @@
 
         getCaller: function(f, args){
             return f.caller || (arguments.callee ? arguments.callee.caller : { name: 'anonymous caller' } );
+        },
+
+
+        /**
+         * Prepends zeros to the specified number until the resulting string matches the specified length, or 2
+         * if no length is specified:  e.g.,  $.util.pad(3) produces "03".
+         *
+         * @param {Number} num The number to pad
+         * @param {Number} [len] Minimum length of the result, defaults to 2.
+         * @return {String} The padded numeric string
+         */
+        pad: function(num, len){
+            len = len || 2;
+            num = num + "";
+            var count = 0, z = [];
+            len = len - num.length;
+            while(count++ < len){
+                z.push("0");
+            }
+            z.push(num);
+            return z.join("");
         }
     };
 

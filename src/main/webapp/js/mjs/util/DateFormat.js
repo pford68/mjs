@@ -4,24 +4,16 @@
     $.require("mjs/util/Calendar");
     $.require("mjs/core/StringBuilder");
     $.require("mjs/core/arrays");
+    $.require("mjs/core/utils");
     
     var $public,
         Calendar = $.util.Calendar,
         patterns = "M y w W D d F E a H k K h m s S z Z G".split(/\s+/),
         $month = null,
+        pad = $.pad,
         DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    function pad(num, len) {
-        len = len || 2;
-        num = num + "";
-        var count = 0, z = [];
-        len = len - num.length;
-        while(count++ < len){
-            z.push("0");
-        }
-        z.push(num);
-        return z.join("");
-    }
+
     function getParsePosition(str, re) {
         var result = re.exec(str);
         return result != null ? {start: result.index, end: result.index + result[0].length, length: result[0].length} : null;
