@@ -22,10 +22,10 @@
         return this;  // for chaining
     };
 
-    function Publisher(){
-        this.clear();
-    }
-    $.extend(Publisher.prototype, {
+    var Publisher = $.Class({
+        initialize: function(){
+            this.clear();
+        },
         publish: function() {
             var args = arguments;
             //$.log("publish").log(args);
@@ -54,7 +54,6 @@
             });
         }
     });
-    //Object.encapsulate("_subscribers", Publisher.prototype);   // TODO:  test performance and memory usage.
 
 
 
