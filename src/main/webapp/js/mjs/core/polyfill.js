@@ -20,10 +20,10 @@
             var defaults, $this = this;
 
             if (arguments.length > 2){
-                defaults = $public.toArray(arguments).slice(2);
+                defaults = $.toArray(arguments).slice(2);
             }
             return function() {
-                return $this.apply(that, defaults ? defaults.concat($public.toArray(arguments)) : arguments);
+                return $this.apply(that, defaults ? defaults.concat($.toArray(arguments)) : arguments);
             }
         }
     });
