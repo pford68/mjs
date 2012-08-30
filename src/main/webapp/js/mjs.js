@@ -36,7 +36,6 @@ var mjs = mjs || {};
         lib = null,                                             // The main JavaScript directory
         //images = "",                                          // The image directory
         regex = {
-            on: /^on/,
             motModule: /^\.\.\/+/,
             letter: /[a-z]/i
         },
