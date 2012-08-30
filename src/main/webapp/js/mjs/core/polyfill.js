@@ -16,6 +16,7 @@
     });
 
     $.augment(Function.prototype, {
+        // Why use this when $.proxy is available?
         bind: function(that){
             var defaults, $this = this;
 
