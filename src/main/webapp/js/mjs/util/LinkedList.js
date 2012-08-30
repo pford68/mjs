@@ -269,25 +269,6 @@
             Object.implement(iterator.prototype, $.ListIterator);
             this._iterator = iterator;
             return this;
-        },
-        /**
-         * Sets the LinkedList to iterate from head to tail when forEach() is called.
-         * The LinkedList will iterate from head to tail by default, but this method
-         * resets the default iterator after backward() or setIterator() has set some
-         * other iterator.
-         *
-         * @return {LinkedList} this instance
-         */
-        forward: function(){
-            return this.setIterator(Iterator);
-        },
-        /**
-         * Sets the LinkedList to iterate from tail to head when forEach() is called.
-         *
-         * @return {LinkedList} this instance
-         */
-        backward: function(){
-            return this.setIterator(ReverseIterator);
         }
     }).implement($.Iterable);
 
