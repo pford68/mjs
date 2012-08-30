@@ -8,8 +8,6 @@
     $.require("mjs/core/arrays");
     $.require("mjs/core/oop");
 
-    var topicObject = {};
-
 
     Function.prototype.subscribe = function(publisher) {
         publisher.add(this);
@@ -61,7 +59,7 @@
     //========================================= For subscribing/publishing through topics.
     var map = {};
 
-    topicObject = {
+    var topicObject = {
         get: function(key){
             return map[key];
         },
