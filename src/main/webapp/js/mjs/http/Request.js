@@ -8,48 +8,81 @@
     $.require("mjs/core/publish");
     $.require("mjs/core/aop");
 
-    var URL, Request;
+    var $config = $.config || { ajax: null };
 
-    var spec = { url: "", method: ""};
-
-    function getQueueName(queue, obj){
-        var name = "on" + queue.capitalize();
-        if (!obj[name]) return null;
-        return name;
-    }
-
-    $.Request = $.Class({
+    $.http.RequestBuilder = $.Class({
         QUEUE_NOT_FOUND: "The queue does not exist.",
-        initialize: function(config){
-            var instance = this;
-            this.config = $.augment(config, {
-                onSuccess: function(response){
-                    instance.state = response;
-                    instance.onSuccess.publish(response);
-                },
-                onFailure: function(response){
-                    instance.state = response;
-                    instance.onFailure.publish(response);
-                }
-            });
-            this.onSuccess = $.Publisher();
-            this.onFailure = $.Publisher();
-            this.state = {};
-            Object.defineProperty(this, "QUEUE_NOT_FOUND", { writable: false });
+        _resource: null,
+        attributes: null,
+        state: null,
+        adapter: null,
+        initialize: function(resource){
+            if (!resource.url) throw new Error("The resource must have a url property.");
+            this._resource = resource;
+            this.attributes = {
+                method: resource.method || 'POST',
+                url: resource.url
+            };
+            this.onSuccess = new $.Publisher();
+            this.onFailure = new $.Publisher();
+            this.adapter = this.adapter || ($config.ajax ? $config.ajax.adapter : null);
+        },
+        buildUrl: function(values){
+            this.attributes.url = this._resource.url.applyTemplate(values);
+            return this;
         },
         addListener: function(queue, listener){
-            queue = getQueueName(this, queue);
+            queue = this["on" + queue.capitalize()];
             if (!queue) throw new Error(this.QUEUE_NOT_FOUND);
             listener.subscribe(this[queue]);
+            return this;
         },
         removeListener: function(queue, listener){
-            queue = getQueueName(this, queue);
+            queue = this["on" + queue.capitalize()];
             if (!queue) throw new Error(this.QUEUE_NOT_FOUND);
             listener.unsubscribe(this[queue]);
+            return this;
         },
-        send: function(args){
-            $.request($.extend({}, this.config, args));
+        build: function(args){
+            $.extend(this.attributes, args);
+            return this;
+        },
+        send: function(){
+            $.request($.override(this, this.attributes));
+            return this;
+        },
+        success: function(response){
+            this.state = response;
+            this.success.publish(response);
+            return this;
+        },
+        failure: function(response){
+            this.state = response;
+            this.failure.publish(response);
+            return this;
+        },
+        addAdapter: function(adapter){
+            this.adapter = adapter;
+        },
+        adapt: function(){
+            if (this.adapter) this.adapter(this);
+            return this;
+        },
+        enqueue: function(evt, callback){
+            var channel = "on" + evt.capitalize();
+            if (this[channel]){
+                var f = this[channel];
+                this[channel] = function(response){
+                    f(response);
+                    callback(response);
+                }
+            }
+            return this;
         }
     });
+
+    //================================================== Constants
+    $.constant("SUCCESS", "success", $.http);
+    $.constant("FAILURE", "failure", $.http);
 
 })(mjs);

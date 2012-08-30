@@ -193,5 +193,23 @@
         }
     };
 
+    $public.request.getProperties = function(){
+        return {
+            url: null,
+            method: 'POST',
+            xss: false,
+            assertion: null,
+            success: null,
+            failure: null,
+            contentType: "text/json",
+            headers: {
+                "Content-Type": 'application/json',
+                accept: 'application/json'
+            },
+            data: null,
+            params: null
+        }
+    };
+
     $.extend($public);
 })(mjs);

@@ -94,6 +94,27 @@
         },
 
 
+        dispatch: function(src, type){
+            var event;
+            if (document.createEvent) {
+                event = document.createEvent("HTMLEvents");
+                event.initEvent(type, true, true);
+            } else {
+                event = document.createEventObject();
+                event.eventType = type;
+            }
+
+            //event.eventName = eventName;
+            //event.memo = memo || { };
+
+            if (document.createEvent) {
+                src.dispatchEvent(event);
+            } else {
+                src.fireEvent("on" + event.eventType, event);
+            }
+        },
+
+
         addDelegate: function(args){
 
         }
