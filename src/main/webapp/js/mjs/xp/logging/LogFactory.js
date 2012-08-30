@@ -189,7 +189,6 @@
 
     // Create the LogFactory singleton and set the Logger type produced by the factory.
     Object.implement(Logger, ILogger);
-    var logger = null;
     var LogFactory = $.getFactory({
         getLogger: function(obj){
             /*
@@ -197,16 +196,16 @@
             we will want multiple loggers per page--different ones in
             different classes, modules, functions, etc.
             */
-            logger = Object.create(Logger);
+            var loggerInstance = Object.create(Logger);
             obj = $.isString(obj) ? { name: obj } : obj;
-            $.extend(logger, {
+            $.extend(loggerInstance, {
                 subject:  (obj && obj.name) ? obj.name : arguments.callee.caller.name,
                 caller: null,
                 datetime: null,
                 fileName: null,
                 logLevel: null
             });
-            return Object.seal(new LoggingDecorator(logger));
+            return Object.seal(new LoggingDecorator(loggerInstance));
         }
     }).build();
 
