@@ -662,7 +662,6 @@ var mjs = mjs || {};
     // Minimize this file's dependencies from now on.
     $public.require("mjs/core/polyfill");
     $public.require("mjs/core/strings");
-    $public.require("mjs/core/ObjectDecorator");
     $public.require("mjs/i18n/" + $config.locale);
     // TODO:  Prevent core modules from depending on modules in other packages.
 
