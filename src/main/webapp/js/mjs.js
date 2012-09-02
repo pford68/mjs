@@ -253,13 +253,14 @@ var mjs = mjs || {};
                 return obj1;
             }
 
-            if (arguments.length == 1){
-                props = arguments[0];
+            var args = $public.from(arguments);
+            if (!props){
+                props = that;
                 that = $;
                 _extend(that, props);
             } else {
-                for (var i = 1; i < arguments.length; i++){
-                    _extend(arguments[0], arguments[i]);
+                for (var i = 1, len = args.length; i < len; i++){
+                    _extend(args[0], args[i]);
                 }
             }
             return that;   // For chaining
@@ -301,8 +302,8 @@ var mjs = mjs || {};
          * Adds properties from props to obj iff the property does not exist in obj or is null.
          */
         augment: function(that, props) {
-            if (arguments.length == 1){
-                props = arguments[0];
+            if (!props){
+                props = that;
                 that = $;
             }
 
@@ -319,8 +320,8 @@ var mjs = mjs || {};
          * Adds properties from props to obj iff the property <strong>exists</strong> in obj.
          */
         override: function(that, props) {
-            if (arguments.length == 1){
-                props = arguments[0];
+            if (!props){
+                props = that;
                 that = $;
             }
             for (var i in props) {
@@ -567,7 +568,8 @@ var mjs = mjs || {};
          * @param {String | Function} method  The method to be bound.
          */
         proxy: function(that, method) {
-            var fcn = $public.isString(method) ? that[method] : method, defaults;
+            var fcn = $public.isString(method) ? that[method] : method,
+                defaults;
             if (!fcn){
                 $public.error("$.proxy","fcn is null for method = " + method);     // TODO:  consider externalizing error messages.
             }
