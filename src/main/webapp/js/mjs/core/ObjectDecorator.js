@@ -37,8 +37,9 @@
                 return a;
             }
 
-            for (var i = 0; i < arguments.length; i++){
-                _extend(this.component, arguments[i]);
+            var args = $.from(arguments);
+            for (var i = 0, len = args.length; i < len; i++){
+                _extend(this.component, args[i]);
             }
             return this;   // For chaining
         },
@@ -81,9 +82,9 @@
          * Checks whether all of the arguments are properties of the component.
          */
         has: function(varargs){
-            var cmp = this.component;
-            for (var i = 1, len = arguments.length; i < len; ++i){
-                if (!cmp[arguments[i]]) return false;
+            var cmp = this.component, args = $.from(arguments);
+            for (var i = 1, len = args.length; i < len; ++i){
+                if (!cmp[args[i]]) return false;
             }
             return true;
         },
