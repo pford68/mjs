@@ -469,17 +469,19 @@ var mjs = mjs || {};
         },
 
 
-        isNode: function(o){
+        isNode: function(that){
             return (
-                typeof Node === "object" ? o instanceof Node :
-                    o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
+                typeof Node === "object" ? that instanceof Node :
+                    that && typeof that === "object" && typeof that.nodeType === "number" && typeof that.nodeName==="string"
                 );
         },
 
-        isElement: function(o){
+        isElement: function(that){
+            // typeof HTMLElement === 'object' is false in Chrome, and the condition for evaluating "that"
+            // in that case cannot distinguish XML nodes from elements.
             return (
-                typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
-                    o && typeof o === "object" && o.nodeType === 1 && typeof o.nodeName==="string"
+                HTMLElement ? that instanceof HTMLElement : //DOM2
+                    o && typeof that === "object" && o.nodeType === 1 && typeof o.nodeName==="string"
                 );
         },
 

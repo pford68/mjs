@@ -755,7 +755,7 @@ describe("MJS Core Functions", function(){
             });
 
             it("should return false for XML nodes", function(){
-                expect($.isElement(doc.getElementsByTagName("fetch")[0])).toBeTruthy();
+                expect($.isElement(doc.getElementsByTagName("fetch")[0])).toBeFalsy();
             });
 
 
