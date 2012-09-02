@@ -105,7 +105,7 @@ describe("mjs.util.LinkedList", function(){
             list.add(cars[6]);
 
             var models = [];
-            list.setIterator(iterators.Right).forEach(function(item){
+            list.reverse.forEach(function(item){
                 models.push(item.value.model);
             });
             expect(models.length).toEqual(5);
