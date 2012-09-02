@@ -33,6 +33,7 @@
 
 
     function Iterator(that){
+        if (!that) return;
         this.parent = that;
         this.reset();
     }
@@ -58,6 +59,7 @@
         this.parent = that;
         this.reset();
     }
+    ReverseIterator.prototype = new Iterator();
     $.extend(ReverseIterator.prototype, {
         next: function(){
             this.current = this.current.previous;
@@ -71,9 +73,21 @@
             var p = this.parent;
             this.currentIndex = p.size();
             this.current = { previous: p.peekLast() };
-        },
-        getCurrentIndex: function(){
-            return this.currentIndex;
+        }
+    });
+
+    /*
+    I like this interface-wise.  Traverse the list in reverse with list.reverse.forEach(...).
+     */
+    function Reverse(that){
+        this.parent = that;
+    }
+    $.extend(Reverse.prototype,{
+        forEach: function(callback){
+            var m = this.parent.getIterator();
+            this.parent.setIterator(ReverseIterator);
+            this.parent.forEach(callback);
+            this.parent.setIterator(m);
         }
     });
 
@@ -109,6 +123,7 @@
         _tail: null,
         _iterator: null,
         _className: 'mjs.util.LinkedList',
+        reverse: null,
 
         /**
          *
@@ -122,6 +137,7 @@
             this._tail = null;
 
             this._iterator = (args && args._iterator) || Iterator;
+            this.reverse = new Reverse(this);
         },
         /**
          * Retrieves the item at the specified index.
@@ -256,7 +272,7 @@
             complexity of the iterator, compared with the succinct speedy while loop in
             getAt(), for example, makes me think this may prove to be a mistake.
              */
-            var it = new this._iterator(this);
+            var it = new this._iterator(this);    // "it" should be destroyed when the function exits.
             while(it.hasNext()){
                 callback(it.next(), it.getCurrentIndex(), this);
             }
@@ -269,6 +285,9 @@
             Object.implement(iterator.prototype, $.ListIterator);
             this._iterator = iterator;
             return this;
+        },
+        getIterator: function(){
+            return this._iterator;
         }
     }).implement($.Iterable);
 
