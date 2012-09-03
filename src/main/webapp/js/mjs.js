@@ -241,7 +241,11 @@ var mjs = mjs || {};
 
 
         /**
-         * Adds properties from props to obj.
+         * Exactly like jQuery's version.  Copies properties from the second object to the first.  This is a
+         * memory-efficient way to create new objects because, when we copy the properties, we are copying
+         * references to the same values or functions.  Thus, only one copy of each function or object will exist.
+         * This does mean, however, that extend() makes a shallow copy, and if you are expecting a clone, and
+         * expecting to make changes in one object that do not effect the other, you will be disappointed.
          */
         extend: function(that, props) {
             function _extend(obj1, obj2){
@@ -299,7 +303,8 @@ var mjs = mjs || {};
 
 
         /**
-         * Adds properties from props to obj iff the property does not exist in obj or is null.
+         * Copies properties from the second object to the first object (that) iff the property
+         * does not exist in the first or is null.
          */
         augment: function(that, props) {
             if (!props){
@@ -317,7 +322,8 @@ var mjs = mjs || {};
 
 
         /**
-         * Adds properties from props to obj iff the property <strong>exists</strong> in obj.
+         * Copies properties from the second object to the first iff the property <strong>exists</strong>
+         * in the first.
          */
         override: function(that, props) {
             if (!props){
@@ -387,7 +393,7 @@ var mjs = mjs || {};
                 base[parts[i]] = base[parts[i]] || {};
                 base = base[parts[i]];
             }
-            return ns;
+            return base;
         },
 
 
