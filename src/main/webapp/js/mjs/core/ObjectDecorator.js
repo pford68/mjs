@@ -4,6 +4,54 @@
  */
 (function($) {
 
+
+    function Specification(spec){
+        this.spec = spec;
+    }
+    $.extend(Specification.prototype,{
+        /**
+         * Returns true/false for whether the specified object has all of the properties in the component.
+         * and whether the types of the corresponding properties match.
+         *
+         * @param that
+         * @return {Boolean}
+         */
+        like: function(that){
+            var spec = this.spec;
+            $.log("like start").log(that);
+            for (var i in spec){
+                if (spec.hasOwnProperty(i) && spec[i] !== null){
+                    if (that[i] !== null && (typeof spec[i] !== typeof that[i])) {
+                        $.log("like").log(i);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        },
+        /**
+         * Returns true/false for whether the specs of the component and the specified object match exactly,
+         * sharing all of the same properties, and whether the types of the corresponding properties match.
+         *
+         * @param that
+         * @return {Boolean}
+         */
+        equals: function(that){
+            var spec = this.spec;
+            for (var i in that){
+                if (that.hasOwnProperty(i) && that[i] !== null){
+                    if (spec[i] !== null && (typeof spec[i] !== typeof that[i])) {
+                        $.log("equals").log(i);
+                        return false;
+                    }
+                }
+            }
+            return this.like(that);
+        }
+    });
+
+
+
     var ObjectDecorator = function(that){
         this.component = that;
     };
@@ -225,45 +273,7 @@
          */
         getSpec: function(){
             var spec = this.component;
-            return Object.create({
-                /**
-                 * Returns true/false for whether the specified object has all of the properties in the component.
-                 * and whether the types of the corresponding properties match.
-                 *
-                 * @param that
-                 * @return {Boolean}
-                 */
-                like: function(that){
-                    $.log("like start").log(that);
-                    for (var i in spec){
-                        if (spec.hasOwnProperty(i) && spec[i] !== null){
-                            if (that[i] !== null && (typeof spec[i] !== typeof that[i])) {
-                                $.log("like").log(i);
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                },
-                /**
-                 * Returns true/false for whether the specs of the component and the specified object match exactly,
-                 * sharing all of the same properties, and whether the types of the corresponding properties match.
-                 *
-                 * @param that
-                 * @return {Boolean}
-                 */
-                equals: function(that){
-                    for (var i in that){
-                        if (that.hasOwnProperty(i) && that[i] !== null){
-                            if (spec[i] !== null && (typeof spec[i] !== typeof that[i])) {
-                                $.log("equals").log(i);
-                                return false;
-                            }
-                        }
-                    }
-                    return this.like(that);
-                }
-            });
+            return new Specification(spec);
         },
 
 
