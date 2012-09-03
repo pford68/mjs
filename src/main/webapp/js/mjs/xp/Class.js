@@ -291,7 +291,7 @@
     /**
      * Possible replacement for $.Class
      */
-    $.ClassBuilder = Object.freeze({
+    $.xp.Class = Object.freeze({
 
 
         /**
