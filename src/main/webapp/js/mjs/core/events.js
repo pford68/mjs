@@ -5,13 +5,18 @@
 
     $.require("mjs/core/utils");
     $.require("mjs/core/html");
+    $.require("mjs/core/publish");
+    $.require("mjs/core/oop");
 
+    //============================================================= Private
     var $public, registry = {},
         regex = {
             on: /^on/
         };
 
 
+
+    //=========================================================== Public
     $public = {
 
         /**
@@ -45,7 +50,12 @@
          * @return {*}
          */
         addListener: function(src, evt, cmd, scope) {
-            var args, listener, ls;
+            var args, // If a config object was passed, it is assigned to args
+                listener,               // The resulting listener object returned by addListener
+                ls,                     // The src's list of listeners
+                se,                     // The src event,
+                usePublisher = false;   // Flag to indicate that we will use the $.Publisher API
+
             if (!evt){
                 args = src;
                 src = $.isString(args.src) ? document.getElementById(args.src) : args.src;
@@ -57,28 +67,58 @@
             evt = evt.replace(regex.on, "");
             cmd = scope ? $.proxy(scope, cmd) : cmd;
 
-            if (window.addEventListener) {
-                src.addEventListener(evt, cmd);
-            } else if (window.attachEvent) {
-                evt = "on" + evt;
-                src.attachEvent(evt, cmd);
-            } else {
-                evt = "on" + evt;
-                src[evt] = cmd;
+            se = src[evt];
+
+            /*
+            Merging the pub-sub API with Events
+
+            Note: I am NOT creating a new Publisher if the Publisher property does
+            not exist.  In other words, the src must support the event by already having
+            a declared publisher.
+             */
+            if (Object.isa(se, $.Publisher)){
+                cmd.subscribe(se);
+                usePublisher = true;
             }
+            else {
+                if (window.addEventListener) {
+                    src.addEventListener(evt, cmd);
+                } else if (window.attachEvent) {
+                    evt = "on" + evt;
+                    src.attachEvent(evt, cmd);
+                } else {
+                    evt = "on" + evt;
+                    src[evt] = cmd;
+                }
+            }
+
             listener = (args instanceof $public.Listener) ? args : new $public.Listener(src, evt, cmd);
-            ls = src.listeners = src.listeners || {};
-            ls[listener.id] = listener;
-            registry[listener.id] = listener;
+            if (!usePublisher){
+                ls = src.listeners = src.listeners || {};
+                ls[listener.id] = listener;
+                registry[listener.id] = listener;
+            }
             return listener;
         },
 
+
         /**
          *
-         * @param listener
+         * @param {$.Listener} listener
          */
         removeListener: function(listener) {
-            var src = listener.src;
+            var src = listener.src,
+                evt = src[listener.evt];
+
+            /*
+            Merging with the $.Publisher API.
+            If the event is a Publisher, unsubsrcibe and return.
+             */
+            if (Object.isa(evt, $.Publisher)){
+                listener.execute.unsubscribe(evt);
+                 return;
+            }
+
             delete src.listeners[listener.id];
             delete registry[listener.id];
             if (window.removeEventListener) {
@@ -90,11 +130,15 @@
             }
         },
 
+
         /**
          *
-         * @param src
+         * @param {HTMLElement} src
          */
         removeListeners: function(src) {
+            if (!$.isElement(src)){
+                throw new Error("[$.removeListeners] The src must be an HTMLElement.");
+            }
             var i, ls = src.listeners;
             for (i in ls) {
                 if (ls.hasOwnProperty(i)) $public.removeListener(ls[i]);
@@ -102,8 +146,21 @@
         },
 
 
-        dispatch: function(src, type){
-            var event;
+        /**
+         *
+         * @param src
+         * @param type
+         * @param content
+         */
+        dispatch: function(src, type, content){
+            var se = src[type],  // The src event property
+                event;
+
+            if (Object.isa(se, $.Publisher)){
+                se.publish(content);
+                return;
+            }
+
             if (document.createEvent) {
                 event = document.createEvent("HTMLEvents");
                 event.initEvent(type, true, true);
@@ -123,12 +180,16 @@
         }
     };
 
+
+
     $public.addListener(window, "unload", function(e){
         var i, src;
         for (i in registry){
             if (registry.hasOwnProperty(i)){
                 src = registry[i].src;
-                if ($.isNode(src)) $.destroy(src);
+                if ($.isElement(src)) {
+                    $.destroy(src);    // Calls Crockford's purge.
+                }
                 src = null;
                 registry[i] = null;
             }
