@@ -4,7 +4,7 @@
     $.require("mjs/core/StringBuilder");
     $.require("mjs/core/utils");
 
-    //============================================================ Private members
+    //============================================================ Private
 
 
     Object.defineProperty(Function.prototype, "methodName", {
@@ -31,18 +31,6 @@
         }
         return false;
     }
-
-    $.AbstractMethodError = (function(){
-        function AbstractMethodError(msg){
-            this.message += msg;
-        }
-        AbstractMethodError.prototype = new Error();
-        $.extend(AbstractMethodError.prototype, {
-            message: "Not all required methods were implemented:  ",
-            name: "AbstractMethodError"
-        });
-        return AbstractMethodError;
-    })();
 
 
     function contains(that, value){
@@ -82,44 +70,48 @@
 
     }
 
+    //----------------------------Interfaces
+    function Interface(a, caller)
+    {
+        this.methods = {};
 
-    //============================================================= Public members
+        var methods = this.methods, methodName, i, len;
+        for (i = 0, len = a.length; i < len; i++)
+        {
+            methodName = a[i];
+            if (!$.isString(methodName)){
+                $.error(caller, "index " + i + " is not a String in $.Interface");
+            }
+            methods[methodName] = methodName;
+        }
+        Object.freeze(this.methods);
+    }
+    Interface.prototype = {
+        extend: function(){
+            var args = [];
+            for (var i = 0; i < arguments.length; i++){
+                args[i] = arguments[i];
+            }
+            for (var j in this.methods){
+                if (this.methods.hasOwnProperty(j)) {
+                    args.push(this.methods[j]);
+                }
+            }
+            return new Interface(args);
+        }
+    };
+
+
+    //============================================================= Public
 
     $.Interface = function _Interface()
     {
         var caller = $.getCaller(_Interface, arguments).name;
-        function Interface(a)
-        {
-            this.methods = {};
 
-            var methods = this.methods, methodName, i, len;
-            if (!$.isArray(a) && $.notEmpty(a)) $.error(caller, '$.Interface requires either no arguments or a String array');
-            for (i = 0, len = a.length; i < len; i++)
-            {
-                methodName = a[i];
-                if (typeof methodName !== 'string') $.error(caller, "index " + i + " is not a String in $.Interface");
-                methods[methodName] = methodName;
-            }
-            Object.freeze(this.methods);
-        }
-        Interface.prototype = {
-            extend: function(){
-                var args = [];
-                for (var i = 0; i < arguments.length; i++){
-                    args[i] = arguments[i];
-                }
-                for (var j in this.methods){
-                    if (this.methods.hasOwnProperty(j)) {
-                        args.push(this.methods[j]);
-                    }
-                }
-                return new Interface(args);
-            }
-        };
 
         // A consequence of returning a new Interface here is that no public "Interface" type will exist.
         // This is intentional.
-        return Object.freeze(new Interface($.toArray(arguments)));
+        return Object.freeze(new Interface($.toArray(arguments), caller));
     };
 
 
@@ -317,7 +309,7 @@
         });
 
         // TODO:  consider adding code to execute a "static initializer" here for customizing the class as a whole:
-        // e.g., calling Object.defineProeprties().
+        // e.g., calling Object.defineProperties().
 
         // Adding private accessor properties to the prototype.  They have to be added after the
         // public methods are mixed in:  the accessors for the property need to determine whether the function
@@ -325,6 +317,7 @@
         for (i in _p){
             if (_p.hasOwnProperty(i)){
                 // TODO:  Strip private properties from the prototype here before re-adding them as accessor properties.
+                //$.log("className").log(c.prototype._className)
                 _private(c.prototype, i, _p[i], _p._className);
             }
         }
@@ -342,7 +335,7 @@
         isa: function(obj, args)
         {
             // Don't allow an Interface to be the right operand of instanceof:  it will throw an error.
-            if (args instanceof $.Interface) return $implements(obj, args);
+            if (args instanceof Interface) return $implements(obj, args);
             return (obj instanceof args);
         },
 
@@ -409,16 +402,18 @@
          * @param {Object} options  Whether to create public getter/setter methods, defaults to false.
          */
         encapsulate: function(prop, that, options){
-            var value = that[prop], pName = prop.capitalize();
-            delete that[prop];
             options = options || {};
+            var value = that[prop] || options.value,
+                pName = prop.capitalize(),
+                className = that._className || options.className || "anonymous";
+            delete that[prop];
             if (options.addSetter === true){
                 that["set" + pName] = function(value){ that[prop] = value; };
             }
             if (options.addGetter === true){
                 that["get" + pName] = function(){ return that[prop] };
             }
-            _private(that, prop, value, that._className)
+            _private(that, prop, value, className)
         }
     };
 
@@ -440,5 +435,19 @@
     // Aliases
     Object.finalizes = Object.implement;
     Object.fulfills = Object.implement;
+
+
+
+    $.AbstractMethodError = (function(){
+        function AbstractMethodError(msg){
+            this.message += msg;
+        }
+        AbstractMethodError.prototype = new Error();
+        $.extend(AbstractMethodError.prototype, {
+            message: "Not all required methods were implemented:  ",
+            name: "AbstractMethodError"
+        });
+        return AbstractMethodError;
+    })();
 
 })(mjs);
