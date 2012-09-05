@@ -120,6 +120,15 @@ var mjs = mjs || {};
         return false;
     }
 
+    function _extend(obj1, obj2){
+        for (var i in obj2){
+            if (obj2.hasOwnProperty(i)){
+                obj1[i] = obj2[i];
+            }
+        }
+        return obj1;
+    }
+
 
 
 
@@ -248,15 +257,6 @@ var mjs = mjs || {};
          * expecting to make changes in one object that do not effect the other, you will be disappointed.
          */
         extend: function(that, props) {
-            function _extend(obj1, obj2){
-                for (var i in obj2){
-                    if (obj2.hasOwnProperty(i)){
-                        obj1[i] = obj2[i];
-                    }
-                }
-                return obj1;
-            }
-
             var args = $public.from(arguments);
             if (!props){
                 props = that;
@@ -476,6 +476,11 @@ var mjs = mjs || {};
         },
 
 
+        /**
+         * Returns true/false for whether the specified object is a Node.
+         * @param that
+         * @return {Boolean}
+         */
         isNode: function(that){
             return (
                 typeof Node === "object" ? that instanceof Node :
@@ -483,6 +488,12 @@ var mjs = mjs || {};
                 );
         },
 
+
+        /**
+         * Returns true/false for whether the specified object is an HTMLElement.
+         * @param that
+         * @return {Boolean}
+         */
         isElement: function(that){
             // typeof HTMLElement === 'object' is false in Chrome, and the condition for evaluating "that"
             // in that case cannot distinguish XML nodes from elements.

@@ -32,6 +32,24 @@
         return false;
     }
 
+    function _implement(obj, $$interface)
+    {
+        if (!obj.interfaces) obj.interfaces = []; // TODO:  prevent "interfaces" from being changed from an array.
+        var $methods = $$interface.methods, errors = [], i, name;
+        for (i in $methods)
+        {
+            if ($methods.hasOwnProperty(i)){
+                if ($.isUndefined(obj[i]) || !$.isFunction(obj[i])) {
+                    errors.push(i);
+                }
+            }
+        }
+        if (errors.length > 0) {
+            throw new $.AbstractMethodError(errors.join(", ") + "in " + caller);
+        }
+        obj.interfaces[obj.interfaces.length] = $$interface; // Adding an array property "interfaces" to obj to store the interfaces implemented.
+    }
+
 
     function contains(that, value){
         for (var i in that){
@@ -349,24 +367,6 @@
          */
         implement: function _implements(obj, $interface /* ,... */)
         {
-            function _implement(obj, $$interface)
-            {
-                if (!obj.interfaces) obj.interfaces = []; // TODO:  prevent "interfaces" from being changed from an array.
-                var $methods = $$interface.methods, errors = [], i, name;
-                for (i in $methods)
-                {
-                    if ($methods.hasOwnProperty(i)){
-                        if ($.isUndefined(obj[i]) || !$.isFunction(obj[i])) {
-                            errors.push(i);
-                        }
-                    }
-                }
-                if (errors.length > 0) {
-                    throw new $.AbstractMethodError(errors.join(", ") + "in " + caller);
-                }
-                obj.interfaces[obj.interfaces.length] = $$interface; // Adding an array property "interfaces" to obj to store the interfaces implemented.
-            }
-
             var caller = $.getCaller(_implements, arguments).name;
             for (var i = 1, len = arguments.length; i < len; i++)
             {

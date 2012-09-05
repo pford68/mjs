@@ -4,6 +4,22 @@
  */
 (function($) {
 
+    //================================================================ Private
+    function _extend(a, b){
+        for (var i in b){
+            if (b.hasOwnProperty(i)){
+                a[i] = b[i];
+            }
+        }
+        return a;
+    }
+
+    function compare(a, b){
+        if ($.isFunction(a.equals)){
+            return a.equals(b)
+        }
+        return false;
+    }
 
     function Specification(spec){
         this.spec = spec;
@@ -51,7 +67,7 @@
     });
 
 
-
+    //============================================================================ Public
     var ObjectDecorator = function(that){
         this.component = that;
     };
@@ -76,15 +92,6 @@
          * @return {*}
          */
         extend: function(varargs){
-            function _extend(a, b){
-                for (var i in b){
-                    if (b.hasOwnProperty(i)){
-                        a[i] = b[i];
-                    }
-                }
-                return a;
-            }
-
             var args = $.from(arguments);
             for (var i = 0, len = args.length; i < len; i++){
                 _extend(this.component, args[i]);
@@ -285,12 +292,6 @@
          * @return {Boolean}
          */
         contains: function(that){
-            function compare(a, b){
-                if ($.isFunction(a.equals)){
-                    return a.equals(b)
-                }
-                return false;
-            }
             var cmp = this.component;
             for (var i in cmp){        // Intentionally not using hasOwnProperty for now.
                 if (cmp[i] == that || ($.isObject(cmp[i] && compare(cmp[i], that)))) {
