@@ -14,13 +14,6 @@
         return a;
     }
 
-    function compare(a, b){
-        if ($.isFunction(a.equals)){
-            return a.equals(b)
-        }
-        return false;
-    }
-
     function Specification(spec){
         this.spec = spec;
     }
@@ -92,6 +85,15 @@
          * @return {*}
          */
         extend: function(varargs){
+            function _extend(a, b){
+                for (var i in b){
+                    if (b.hasOwnProperty(i)){
+                        a[i] = b[i];
+                    }
+                }
+                return a;
+            }
+
             var args = $.from(arguments);
             for (var i = 0, len = args.length; i < len; i++){
                 _extend(this.component, args[i]);
