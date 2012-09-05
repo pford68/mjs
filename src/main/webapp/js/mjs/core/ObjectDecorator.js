@@ -5,14 +5,6 @@
 (function($) {
 
     //================================================================ Private
-    function _extend(a, b){
-        for (var i in b){
-            if (b.hasOwnProperty(i)){
-                a[i] = b[i];
-            }
-        }
-        return a;
-    }
 
     function Specification(spec){
         this.spec = spec;
