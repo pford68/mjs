@@ -66,7 +66,7 @@ describe("interface", function(){
             try {
                 var c = new MyClass();
                 Object.implement(c, List);
-                this.fail("We should not have reach this point.");
+                this.fail("We should not have reached this point.");
             } catch(e){
 
             }
