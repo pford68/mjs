@@ -273,18 +273,19 @@ var mjs = mjs || {};
 
         /**
          * Returns a deep copy of the specified object
-         * @param args
-         * @return {Object}
+         *
+         * @param {Object} that The object to clone
+         * @return {Object} The clone
          */
-        clone: function(args){
+        clone: function(that){
             var clone = {}, prop, i;
-            for (i in args){
-                if (args.hasOwnProperty(i)){
-                    prop = args[i];
+            for (i in that){
+                if (that.hasOwnProperty(i)){
+                    prop = that[i];
                     // If I add clone() to Object.prototype, which I'm considering,
                     // calling Object.clone() within mjs.clone() breaks mj.clone().
                     if ($public.isObject(prop, true)){
-                        clone[i] = $public.clone(args[i]);
+                        clone[i] = $public.clone(that[i]);
                     }
                     else if ($public.isArray(prop)) {
                         var c = [];
@@ -430,7 +431,11 @@ var mjs = mjs || {};
             return typeof value === 'number';
         },
 
-
+        /**
+         * Tests whether the specified value is an array.
+         * @param {*} value
+         * @return {Boolean}
+         */
         isArray: function(value) {
             // The last condition (...|| value.constructor + '' == Array + '') is needed to test arrays from other frames/windows accurately.
             return (typeof value !== 'undefined' && value !== null
@@ -444,7 +449,7 @@ var mjs = mjs || {};
          * frames as well.  If the "pure" flag is "true" then isObject() should return true only if the value belongs
          * exclusively to the Object type, not to any sub-type.</p>
          *
-         * @param value
+         * @param {*} value
          * @param {boolean} [pure] Whether to restrict the objects to the Object type.
          */
         isObject: function(value, pure) {
@@ -499,7 +504,7 @@ var mjs = mjs || {};
             // in that case cannot distinguish XML nodes from elements.
             return (
                 HTMLElement ? that instanceof HTMLElement : //DOM2
-                    o && typeof that === "object" && o.nodeType === 1 && typeof o.nodeName==="string"
+                    that && typeof that === "object" && that.nodeType === 1 && typeof that.nodeName==="string"
                 );
         },
 
@@ -507,7 +512,7 @@ var mjs = mjs || {};
         /**
          * Same as global parseInt except that it automatically supplies a radix of 10, thus parses numbers beginning
          * with zeros correctly (e.g., $.parseInt("015") == 15) and returns zero for non-numeric values, instead of NaN.
-         * @param str
+         * @param {String} str A numeric string
          */
         parseInt: function(str) {
             if (!str) str = "";
@@ -518,7 +523,7 @@ var mjs = mjs || {};
 
         /**
          * Same as global parseFloat except non-numeric strings return 0.0, instead of NaN.
-         * @param str
+         * @param {String} str A numeric string
          */
         parseFloat: function(str) {
             if (!str) str = "";
@@ -553,9 +558,10 @@ var mjs = mjs || {};
          * <p>
          * Converts an Object, not merely a NodeList, to an Array--as one might expect jQuery.makeArray() to do.
          * The values of properties <strong>declared in the object, not inherited,</strong> become elements of the array.
+         * Indented for use with "pure" objects, key/value pairs, and may or may not work with subclasses of Object.
          * </p>
          *
-         * @param that A pure Object
+         * @param {Object} that A set of key/value pairs
          */
         toArray: function(that) {
             if ($public.isEmpty(that)) return [];  // Return nulls as empty arrays
@@ -606,10 +612,10 @@ var mjs = mjs || {};
          * Again, like Python's range(), if you pass only one parameter, you'll get a range from 0 up to, but not
          * including that parameter.  Again, like Python's version, it does not work for floats.
          *
-         * @param start
-         * @param end
-         * @param step
-         * @return {Array}
+         * @param {Integer} start
+         * @param {Integer} end
+         * @param {Integer} step
+         * @return {Array} An array of integers
          */
         range: function(start, end, step){
             var result = [];
@@ -633,14 +639,14 @@ var mjs = mjs || {};
          * Converts the arguments object to an array.  If a transformer function is provided,
          * it performs the transformer function for each item in the arguments object.
          *
-         * @param $arguments
-         * @param transformer
-         * @return {Object}
+         * @param {Arguments} $arguments The arguments object to convert to an array
+         * @param {Function} [transformer] A function for transforming the argument values
+         * @return {Array} An array of arguments object's values
          */
         from: function($arguments, transformer){
             var $_ = Array.prototype.slice.call($arguments);
             if ($public.isFunction(transformer)){
-                $_.forEach(transformer);
+                return $_.map(transformer);
             }
             return $_;
         },
@@ -650,9 +656,9 @@ var mjs = mjs || {};
          * Creates a constant by the name specified by k in the specific object scope, or in mjs
          * if no scope is specified.  The constant is immutable and cannot be deleted from its scope.
          *
-         * @param k
-         * @param v
-         * @param scope
+         * @param {String} k The name of the new constant
+         * @param {String | Number | boolean} v The value of the new constant
+         * @param {Object} [scope] The object to which the constant belongs.
          */
         constant: function(k, v, scope){
             if ($public.isObject(v)) {
@@ -666,6 +672,17 @@ var mjs = mjs || {};
                 enumerable: true,
                 configurable: false
             });
+        },
+
+
+        /**
+         * Cross-browser function for returning an object's prototype.
+         *
+         * @param {Object} that The object from which to retrieve the prototype
+         * @return {Object} The specified object's prototype
+         */
+        getPrototype: function(that){
+            return that.__proto__ || Object.getPrototypeOf(that);
         }
     };
 
