@@ -6,6 +6,7 @@ describe("mjs.xp.Class() suite", function() {
     var classBody, body,
         superClassObj, subClassObj, subSubClassObj;
 
+
     beforeEach(function() {
         classBody = {
             id: null,
@@ -31,8 +32,9 @@ describe("mjs.xp.Class() suite", function() {
         body = {};
         $.extend(body, classBody);
 
-        $.xp.Class.declare("SuperClass", body).create();
-        $.xp.Class.declare("SubClass", {
+
+        $.xp.Class("SuperClass").define(body);
+        $.xp.Class("SubClass").extend(SuperClass).define({
             initialize: function(args) {
                 if (args) this.id = "__subclass" + args.id + "__";
             },
@@ -41,8 +43,8 @@ describe("mjs.xp.Class() suite", function() {
             },
             newMethod: function() {
             }
-        }).extend(SuperClass).create();
-        $.xp.Class.declare("SubSubClass", {}).extend(SubClass).create();
+        });
+        $.xp.Class("SubSubClass").extend(SubClass).define({});
         superClassObj = new SuperClass({id: 'test'});
         subClassObj = new SubClass({id: 'child', newProp: "this should not be added"});
         subSubClassObj = new SubSubClass();
@@ -75,9 +77,9 @@ describe("mjs.xp.Class() suite", function() {
         });
 
         it("A default constructor should be created if no initialize() method is passed to $.xp.Class()", function(){
-            $.xp.Class.declare("MyGreatClass",{
+            $.xp.Class("MyGreatClass").define({
                 kill: function(){}
-            }).create();
+            });
             expect(MyGreatClass.prototype.initialize).toBeDefined();
         });
 
@@ -86,22 +88,22 @@ describe("mjs.xp.Class() suite", function() {
             Below if the parent class constructor has been invoked, properties set by the parent constructor
             should have the values set by that constructor, unless reset by the subclass constructor.
              */
-            $.xp.Class.declare("MyGreatClass", {
+            $.xp.Class("MyGreatClass").define({
                 id: null,
                 initialize: function(){
                     this.id = 5;
                 }
-            }).create();
-            $.xp.Class.declare("MyGreatSubClass", {}).extend(MyGreatClass).create();
+            });
+            $.xp.Class("MyGreatSubClass").extend(MyGreatClass).define({});
             var instance = new MyGreatSubClass();
             expect(instance.id).toEqual(5);
 
-            $.xp.Class.declare("MyGreatSubClass2", {
+            $.xp.Class("MyGreatSubClass2").extend(MyGreatClass).define({
                 id: 3,
                 initialize: function(){
                     this.age = 6;
                 }
-            }).extend(MyGreatClass).create();
+            });
             var instance2 = new MyGreatSubClass2();
             expect(instance2.id).toEqual(5);
         });
@@ -111,32 +113,32 @@ describe("mjs.xp.Class() suite", function() {
             Below if the parent class constructor has been invoked, properties set by the parent constructor
             should have the values set by that constructor, unless reset by the subclass constructor.
              */
-            $.xp.Class.declare("MyGreatClass", {
+            $.xp.Class("MyGreatClass").define({
                 id: null,
                 initialize: function(){
                     this.id = 5;
                 }
-            }).create();
+            });
             // In this case, the subclass has a constructor that overrides the settings made by the parent constructor.
-            $.xp.Class.declare("MyGreatSubClass", {
+            $.xp.Class("MyGreatSubClass").extend(MyGreatClass).define({
                 initialize: function(id){
                     this.id = id;
                 }
-            }).extend(MyGreatClass).create();
+            });
             var instance = new MyGreatSubClass(6);
             expect(instance.id).toEqual(6);
         });
 
         it("Superclass constructors that have parameters should not be called automatically.", function(){
-            $.xp.Class.declare("MyGreatClass", {
+            $.xp.Class("MyGreatClass").define({
                 id: "MyGreatClass_1001",
                 msg: "my constructor has parameters",
                 initialize: function(id){
                     throw new Error("This constructor should not have been called.");
                 }
-            }).create();
+            });
 
-            $.xp.Class.declare("MyGreatSubClass", { }).extend(MyGreatClass).create();
+            $.xp.Class("MyGreatSubClass").extend(MyGreatClass).define({ });
             try {
                 var instance = new MyGreatSubClass();
             } catch(e){
@@ -150,17 +152,17 @@ describe("mjs.xp.Class() suite", function() {
 
 
          it("Constructors (and parent class constructors) should not be called more than once during initialization.", function(){
-            $.xp.Class.declare("MyGreatClass", {
+            $.xp.Class("MyGreatClass").define({
                 id: 2,
                 initialize: function(id){
                     this.id *= 2;
                 }
-            }).create();
-            $.xp.Class.declare("MyGreatSubClass", {
+            });
+            $.xp.Class("MyGreatSubClass").extend(MyGreatClass).define({
                 initialize: function(){
                     this.$super(0);
                 }
-            }).extend(MyGreatClass).create();
+            });
             var instance = new MyGreatSubClass();
             expect(instance.id).toEqual(4);
         });
@@ -226,13 +228,15 @@ describe("mjs.xp.Class() suite", function() {
                         this.store.push(item);
                     }
                 }
-                $.xp.Class.declare("mjs.mi.Test1", {
-                    identify: function(){  return "Hello, from Test1"; }
-                }).create();
-                $.xp.Class.declare("mjs.mi.Test2", {
-                    insult: function(){ return "F you"; },
-                    setMessage: function(){ return "Not implemented"; }
-                }).extend(mjs.mi.Test1, SuperClass, mixin).create();
+                $.xp.Class("mjs.mi.Test1")
+                    .define({
+                        identify: function(){  return "Hello, from Test1"; }
+                    });
+                $.xp.Class("mjs.mi.Test2").extend(mjs.mi.Test1, SuperClass, mixin)
+                    .define({
+                        insult: function(){ return "F you"; },
+                        setMessage: function(){ return "Not implemented"; }
+                    });
             });
 
             it("should mix the properties of the parent prototype into the subclass prototype", function(){
@@ -262,7 +266,7 @@ describe("mjs.xp.Class() suite", function() {
 
 
     describe("Any property whose name is all upper case should be a constant and static", function(){
-        $.xp.Class.declare("WTF", {
+        $.xp.Class("WTF").define({
             FIRST_ORDERED_NODE_TYPE: 'H1',
             CLASSNAME: 'wtf',
             size: 12,
@@ -270,7 +274,7 @@ describe("mjs.xp.Class() suite", function() {
             initialize: function(args){
                 $.extend(this, args);
             }
-        }).create();
+        });
         var instance;
 
 
@@ -301,7 +305,7 @@ describe("mjs.xp.Class() suite", function() {
 
 
     describe("Any property whose names begin with an underscore should be private", function(){
-        $.xp.Class.declare("SomeMap", {
+        $.xp.Class("SomeMap").define({
             _items: null,
             initialize: function(args){
                 this._items = $.extend({}, args);
@@ -312,7 +316,7 @@ describe("mjs.xp.Class() suite", function() {
             get: function(k){
                 return this._items[k];
             }
-        }).create();
+        });
         var map = new SomeMap({ firstName: "Philip", lastName: "Ford"});
 
         it("should not be accessible outside the class", function(){
@@ -341,7 +345,7 @@ describe("mjs.xp.Class() suite", function() {
         });
 
         it("should not be inherited", function(){
-            $.xp.Class.declare("SomeOtherMap", {
+            $.xp.Class("SomeOtherMap").extend(SomeMap).define({
                 getItems: function(){
                     return this._items;
                 },
@@ -349,7 +353,7 @@ describe("mjs.xp.Class() suite", function() {
                 get: function(key){
                     return this._items[key];
                 }
-            }).extend(SomeMap).create();
+            });
 
             try {
                 expect(new SomeOtherMap().getItems()).toBeUndefined();
@@ -371,11 +375,12 @@ describe("mjs.xp.Class() suite", function() {
         });
 
         it("should still be accessible from inherited methods", function(){
-            $.xp.Class.declare("SomeOtherMap", {
-                getItems: function(){
-                    return this._items;
-                }
-            }).extend(SomeMap).create();
+            $.xp.Class("SomeOtherMap").extend(SomeMap)
+                .define({
+                    getItems: function(){
+                        return this._items;
+                    }
+                });
 
             var that = new SomeOtherMap();
 
@@ -391,13 +396,14 @@ describe("mjs.xp.Class() suite", function() {
 
 
         describe("_className", function(){
-            $.xp.Class.declare("mjs.test.SomeOtherMap", {
-                _items: {},
-                _className: "mjs.test.SomeOtherMap",
-                put: function(key, value){
-                    this._items[key] = value;
-                }
-            }).extend(SomeMap).create();
+            $.xp.Class("mjs.test.SomeOtherMap").extend(SomeMap)
+                .define({
+                    _items: {},
+                    _className: "mjs.test.SomeOtherMap",
+                    put: function(key, value){
+                        this._items[key] = value;
+                    }
+                });
 
             it("should be private", function(){
                 try {
@@ -413,12 +419,12 @@ describe("mjs.xp.Class() suite", function() {
             });
 
             it("should be fully qualified and the enclosing package should be created automatically, if needed", function(){
-                $.xp.Class.declare("mjs.collections.xp.TreeSet", {
+                $.xp.Class("mjs.collections.xp.TreeSet").define({
                     _items: [],
                     add: function(value){
                         this._items.push(value)
                     }
-                }).create();
+                });
                 expect(mjs.collections.xp.TreeSet).toBeDefined();
                 expect(new mjs.collections.xp.TreeSet().getClassName()).toEqual("mjs.collections.xp.TreeSet");
             });
@@ -436,20 +442,20 @@ describe("mjs.xp.Class() suite", function() {
         it("should have $super() for invoking parent-class constructor (initialize).", function(){
             var test = 3;
             var calls = 0;
-            $.xp.Class.declare("Category", {
+            $.xp.Class("Category").define({
                 initialize: function(id){
                     this.id = "Category: " + id;
                     test = this.id;
                     ++calls;
                 }
-            }).create();
-            $.xp.Class.declare("Genus", {
+            });
+            $.xp.Class("Genus").extend(Category).define({
                 initialize: function(id, name){
                     this.$super(id);
                     this.id = "Genus: " + id;
                     this.name = name;
                 }
-            }).extend(Category).create();
+            });
             expect(test).toEqual(3);    // A control
             var genus = new Genus(5, "Horse");
             expect(test).toEqual("Category: " + 5);
