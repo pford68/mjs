@@ -83,14 +83,14 @@
         Object.defineProperty(that, k, {
             get: function _getPrivateProperty(){
                 var caller = $.getCaller(_getPrivateProperty, arguments);
-                if (caller == contains || contains(that, caller)){
+                if (caller == contains || contains(that, caller)){  // Added "caller == contains" for Chrome/Safari
                     return _p;
                 }
                 throw new Error(errorMsg.replaceArgs(k, className || ""));
             },
             set: function _setPrivateProperty(value){
                 var caller = $.getCaller(_setPrivateProperty, arguments);
-                if (caller == contains || contains(that, caller)){ // Using the "in" operator did not work
+                if (caller == contains || contains(that, caller)){ // Added "caller == contains" for Chrome/Safari
                     _p = value;
                 } else {
                     throw new Error(errorMsg.replaceArgs(k, className || ""));
