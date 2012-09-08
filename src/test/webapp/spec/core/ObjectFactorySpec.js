@@ -259,7 +259,7 @@ describe("mjs.getFactory()", function(){
 
     describe("The objects produced by the returned factory", function(){
 
-        it("should all share the same copies of inherited methods", function(){
+        it("should all share the same copies of inherited methods:  they should not have separate copies", function(){
             var a = ObjectX.build();
             var b = ObjectX.build();
             expect(a.add === b.add).toBeTruthy();
