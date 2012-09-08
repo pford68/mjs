@@ -69,7 +69,7 @@
      */
 	var blueprint = {
 
-        transfer: true,     // Whether to pass the function arguments along to the other wrapped function.
+        //transfer: true,     // Whether to pass the function arguments along to the other wrapped function.
 
         /**
          * <p>Causes the adviser to be executed before every call to advised[advisedFunc].</p>
@@ -137,7 +137,7 @@
         }
         var advice = Advice.build();
         advice.adviser = adviser;
-        advice.transfer = transfer != null ? transfer : advice.transfer;
+        advice.transfer = transfer != null ? transfer : true;
         return Object.seal(advice);
     }
 

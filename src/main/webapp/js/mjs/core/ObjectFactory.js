@@ -57,10 +57,9 @@
         delete blueprint.$super;
 
 
-        blueprint = $.clone(blueprint);  /* Once the blueprint is set, I don't want people to change it,
-                                            and tests prove that this clone() call is necessary for achieving this.
-                                            Note:  Using Object.freeze() here, instead of clone(),
-                                            breaks the AOP unit tests. */
+        blueprint = Object.freeze(blueprint);  /* Once the blueprint is set, I don't want people to change it.
+                                                  Test shows that I have to freeze (or clone) the blueprint at
+                                                  this point in the code to prevent changes. */
 
         // Handling the faulty configurations
         if (config.writable != null && (config.set || config.get )){
