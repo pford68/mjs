@@ -16,30 +16,45 @@
     // A private object for passing between constructors.
     function inherit(){}
 
-    function $implements(obj, $interface)
+    /*
+    Used to determine whether an object implements an interface, without throwing an error if it doesn't,
+    as _implement, hence Object.implement, would do.
+    */
+    function $implements(that, $interface)
     {
-        if (!obj.interfaces || !($interface instanceof Interface)) return false;
-        if (!$.isArray(obj.interfaces))
+        if (!that._interfaces || !($interface instanceof Interface)) return false;
+        if (!$.isArray(that._interfaces))
         {
-            $.error("$implements", "The interfaces property should be an Array:  " + obj.interfaces);
+            $.error("$implements", "The interfaces property should be an Array:  " + obj._interfaces);
         }
 
-        var i, len = obj.interfaces.length;
+        var i, len = that._interfaces.length;
         for (i = 0; i < len; i++)
         {
-            if (obj.interfaces[i] === $interface) return true;
+            if (that._interfaces[i] === $interface) return true;
         }
         return false;
     }
 
-    function _implement(obj, $$interface)
+    /*
+    Checks whether the object contains all of the specified functions and throws an error if it doesn't.
+    Used by Object.implement.
+     */
+    function _implement(that, $$interface, caller)
     {
-        if (!obj.interfaces) obj.interfaces = []; // TODO:  prevent "interfaces" from being changed from an array.
-        var $methods = $$interface.methods, errors = [], i, name;
+        if (!that._interfaces) {
+            Object.defineProperty(that, "_interfaces", {
+                value: [],
+                writable: false,
+                configurable: false,
+                enumerable: false
+            })
+        }
+        var $methods = $$interface.methods, errors = [], i;
         for (i in $methods)
         {
             if ($methods.hasOwnProperty(i)){
-                if ($.isUndefined(obj[i]) || !$.isFunction(obj[i])) {
+                if ($.isUndefined(that[i]) || !$.isFunction(that[i])) {
                     errors.push(i);
                 }
             }
@@ -47,13 +62,13 @@
         if (errors.length > 0) {
             throw new $.AbstractMethodError(errors.join(", ") + "in " + caller);
         }
-        obj.interfaces[obj.interfaces.length] = $$interface; // Adding an array property "interfaces" to obj to store the interfaces implemented.
+        that._interfaces[that._interfaces.length] = $$interface; // Adding an array property "interfaces" to obj to store the interfaces implemented.
     }
 
 
     function contains(that, value){
         for (var i in that){
-            if (that[i] == value) return true;
+            if (that[i] == value) return true; // Leaving out hasOwnProperty() purposely for now.
         }
         return false;
     }
@@ -370,7 +385,7 @@
             var caller = $.getCaller(_implements, arguments).name;
             for (var i = 1, len = arguments.length; i < len; i++)
             {
-                _implement(obj, arguments[i]);
+                _implement(obj, arguments[i], caller);
             }
 
             return obj;
@@ -408,10 +423,10 @@
                 className = that._className || options.className || "anonymous";
             delete that[prop];
             if (options.addSetter === true){
-                that["set" + pName] = function(value){ that[prop] = value; };
+                that["set" + pName.replace(/$_/,"")] = function(value){ that[prop] = value; };
             }
             if (options.addGetter === true){
-                that["get" + pName] = function(){ return that[prop] };
+                that["get" + pName.replace(/$_/,"")] = function(){ return that[prop] };
             }
             _private(that, prop, value, className)
         }
@@ -428,9 +443,11 @@
 
 
     // Why did I do this?
+    /*
     $.augment(Function.prototype, {
         implement: $Object.implement
     });
+    */
 
     // Aliases
     Object.finalizes = Object.implement;

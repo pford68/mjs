@@ -120,6 +120,12 @@
     $.log("Test instance 2").log(test2.id);
     $.log("Test instance").log(test.id);
 
+
+    var a = { id: 5, test: function(){$.log("This is a.test.")}};
+    var a2 = Object.create(a);
+    a2.id = 4;
+    $.log("a.id: " + a.id).log("a2.id:  " + a2.id);
+
 })(mjs);
 </script>
 </html>

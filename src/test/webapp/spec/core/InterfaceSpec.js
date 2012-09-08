@@ -66,7 +66,7 @@ describe("interface", function(){
             try {
                 var c = new MyClass();
                 Object.implement(c, List);
-                this.fail("We should not have reach this point.");
+                this.fail("We should not have reached this point.");
             } catch(e){
 
             }
@@ -80,7 +80,7 @@ describe("interface", function(){
             }).implement(List);
             try {
                 var c = new MyNextClass();
-                this.fail("We should not have reach this point.");
+                this.fail("We should not have reached this point.");
             } catch(e){
 
             }
@@ -91,7 +91,7 @@ describe("interface", function(){
             try {
                 var c = new MyNextClass();
             } catch(e){
-                this.fail("We should not have reach this point.");
+                this.fail("We should not have reached this point.");
             }
         });
     });
