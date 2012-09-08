@@ -189,12 +189,8 @@ var mjs = mjs || {};
                 (2) I can give the downloaded module access to its name, from the module path, which
                     helps with logging, among other things.
                 */
-                (function($){
-                    var mjs, self;  // Note: self will be available to imported modules iff they take a $this parameter.
-                    self = {
-                        name: module
-                    };
-                    mjs = $;
+                (function loader($){
+                    var mjs = $;
                     if (!startsWith(module, "../")) {
                         $.module(module);
                     }
