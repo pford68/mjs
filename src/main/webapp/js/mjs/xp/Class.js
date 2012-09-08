@@ -48,16 +48,16 @@
 
 
 
-    function ClassDefinition(name, definition){
-        definition._className = name;
+    function ClassDefinition(name){
         var parts = name.split(/\.|\//g);
-        var className = parts.pop();
+        var shortName = parts.pop();
+
         this._config = {
+            className: name,
             module:  (parts.length > 0 ? $.module(parts.join(".")) : window),
-            shortName: className,
-            definition: definition,
+            shortName: shortName,
             interfaces: [],
-            $super: null
+            $super: []
         };
     }
     $.extend(ClassDefinition.prototype, {
@@ -70,28 +70,36 @@
          *
          * @return void
          */
-        create: function(){
+        define: function(definition){
+
             var config = this._config,
-                def = config.definition,       // The specified class body.
-                c = null,                       // The new "class," which is also a function.
-                $super = config.$super,         // The parent "class," which is also a function.
-                init = null;                    // The specified initializer or an empty function.
+                __class__ = null,           // The new "class," which is also a function.
+                $super = null,              // The parent "class," which is also a function.
+                init = null;                // The specified initializer or an empty function.
 
+            definition._className = config.className;
 
+            if (config.$super.length > 1){
+                config.$super.forEach(function(s){
+                    $.augment(definition, $.isFunction(s) ? s.prototype : s);
+                });
+            } else if (config.$super.length == 1){
+                $super = config.$super[0];
+            }
 
             // 2012/08/02:  Transitioning to using constructor instead of initialize.
-            if (def.hasOwnProperty("constructor")){
-                def.initialize = def.constructor;
+            if (definition.hasOwnProperty("constructor")){
+                definition.initialize = definition.constructor;
             }
-            if (def && def.initialize){
-                init = def.initialize;
+            if (definition && definition.initialize){
+                init = definition.initialize;
             } else  {
-                if (!def) def = {};
-                init = def.initialize = function(){}
+                if (!definition) definition = {};
+                init = definition.initialize = function(){}
             }
 
             // New class
-            c = function(){
+            __class__ = function(){
                 var len = arguments.length, $sinit /* Super constructor */;
                 /*
                  Calling the super class constructor first (if parameter-less), like Java does.
@@ -133,20 +141,23 @@
 
             // Extend the parent class, if any, ensuring that instanceof works as expected for subclasses.
             if (typeof $super === 'function') {
-                c.prototype = new $super(inherit);
+                __class__.prototype = new $super(inherit);
             }
 
             // Adding the private interfaces property:  it will be stripped out below and re-added in _private.
-            def._interfaces = config.interfaces;
+            definition._interfaces = config.interfaces;
 
-            var prop, _p = {}, constants = {}, _def = $.extend({}, def);
-            for (var i in _def){
-                if (_def.hasOwnProperty(i)){
-                    prop = _def[i];
+            var prop,                             // The current property in the loop below
+                _p = {},                          // Private members in definition
+                constants = {},                   // The constants found in definition
+                def = $.extend({}, definition);   // For iterating over the properties while deleting some from definition
+            for (var i in def){
+                if (def.hasOwnProperty(i)){
+                    prop = def[i];
                     // Handle private properties
                     if (i.startsWith("_")){
                         _p[i] = prop;
-                        delete def[i];
+                        delete definition[i];
                     }
                     // Tell each method its own name
                     else if ($.isFunction(prop)){
@@ -154,9 +165,9 @@
                     }
                     // Handle constants
                     else if (i.isUpperCase()){
-                        $.constant(i, prop, c);
+                        $.constant(i, prop, __class__);
                         constants[i] = prop;
-                        delete def[i];
+                        delete definition[i];
                     }
                 }
             }
@@ -164,7 +175,7 @@
 
             // The following mixins are meant to be superseded by
             // (i.e., overridden by) corresponding properties in args.
-            $.augment(def, {
+            $.augment(definition, {
                 /**
                  * Defines how to compare instances of this class.  <strong>Does not require hash().</strong>
                  *
@@ -187,8 +198,8 @@
 
 
             // Mixing in the new "class body"
-            $.extend(c.prototype, def, {
-                constructor: c,
+            $.extend(__class__.prototype, definition, {
+                constructor: __class__,
                 inherited: function(){
                     var p, prop, args = $.from(arguments);
                     if (arguments.length > 0) {
@@ -226,7 +237,7 @@
                 if (_p.hasOwnProperty(i)){
                     // TODO:  Strip private properties from the prototype here before re-adding them as accessor properties.
                     //$.log("ClassBuilder...className").log(c.prototype._className)
-                    _private(c.prototype, i, _p[i], _p._className);
+                    _private(__class__.prototype, i, _p[i], _p._className);
                 }
             }
 
@@ -235,7 +246,7 @@
             // The answer to the second question is probably no.
 
             //$.log("ClassBuilder.c").log(c.prototype)
-            config.module[config.shortName] = c;
+            config.module[config.shortName] = __class__;
         },
 
 
@@ -248,23 +259,8 @@
          * @return {ClassDefinition} The Class Definition
          */
         extend: function(varargs){
-            var supers = $.from(arguments),
-                def = this._config.definition;
-            // Multiple inheritance:  mixin the parent prototypes.
-            if (supers.length > 1){
-                supers.forEach(function($super){
-                    $.augment(def, $.isFunction($super) ? $super.prototype : $super);
-                });
-            }
-            // One parent:  assign the parent to the $super so that an instance of it
-            // can be assigned to the subclass' prototype later.
-            else if (supers.length == 1){
-                this._config.$super = supers[0];
-            }
-            // No parents:  set _config.$super to null.
-            else {
-                this._config.$super = null;
-            }
+            var supers = $.from(arguments);
+            this._config.$super = $.from(arguments);
             return this;
         },
 
@@ -291,19 +287,8 @@
     /**
      * Possible replacement for $.Class
      */
-    $.xp.Class = Object.freeze({
-
-
-        /**
-         * 
-         * @param name
-         * @param definition
-         * @return {*}
-         */
-        declare: function(name, definition){
-            return new ClassDefinition(name, definition);
-        }
-
-    });
+    $.xp.Class = function(name){
+        return new ClassDefinition(name);
+    }
 
 })(mjs);
