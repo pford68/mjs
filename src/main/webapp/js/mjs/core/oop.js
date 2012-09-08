@@ -6,7 +6,6 @@
 
     //============================================================ Private
 
-
     Object.defineProperty(Function.prototype, "methodName", {
         enumerable: false,
         configurable: true,
@@ -174,10 +173,10 @@
      *   </p>
      *
      *
-     *   @param {Function} [superClass] The parent class, if any.
-     *   @param {Object} classBody The body of the new class
+     *   @param {Function|Object} [superClass] The parent class, if any.
+     *   @param {Object} definition The body of the new class
      */
-    $.Class = function()
+    $.Class = function(superClass, definition)
     {
         /*
          DESIGN:
@@ -185,38 +184,33 @@
          if (parent) myClass.prototype = new Parent();
          mixin(myClass.prototype, classBody);
          */
-        var args = null,    // The specified class body.
-            c = null,       // The new "class," which is also a function.
-            $super = null,  // The parent "class," which is also a function.
-            init = null;     // The specified initializer or an empty function.
+        var __class__ = null,       // The new "class," which is also a function.
+            init = null;            // The specified initializer or an empty function.
 
-
-        if (arguments.length >= 2){
-            $super = arguments[0];
-            args = arguments[1];
-        } else if (arguments.length == 1){
-            if ($.isObject(arguments[0], true)) args = arguments[0];
+        if (!definition){
+            definition = superClass;
+            superClass = null;
         }
 
         // 2012/08/02:  Transitioning to using constructor instead of initialize.
-        if (args.hasOwnProperty("constructor")){
-            args.initialize = args.constructor;
+        if (definition.hasOwnProperty("constructor")){
+            definition.initialize = definition.constructor;
         }
-        if (args && args.initialize){
-            init = args.initialize;
+        if (definition && definition.initialize){
+            init = definition.initialize;
         } else  {
-            if (!args) args = {};
-            init = args.initialize = function(){}
+            if (!definition) definition = {};
+            init = definition.initialize = function(){}
         }
 
         // New class
-        c = function(){
+        __class__ = function(){
             var len = arguments.length, $sinit /* Super constructor */;
             /*
              Calling the super class constructor first (if parameter-less), like Java does.
              */
-            if ($super && $super.prototype.initialize){
-                $sinit = $super.prototype.initialize;
+            if (superClass && superClass.prototype.initialize){
+                $sinit = superClass.prototype.initialize;
                 if ($sinit.length === 0){
                     $sinit.apply(this, arguments);
                 }
@@ -250,23 +244,28 @@
         };
 
         // Extend the parent class, if any, ensuring that instanceof works as expected for subclasses.
-        if (typeof $super === 'function') {
-            c.prototype = new $super(inherit);
+        if (typeof superClass === 'function') {
+            __class__.prototype = new superClass(inherit);
         }
 
-        c.implement = function(){
-            c.prototype._interfaces = $.toArray(arguments);
-            return c;
+        // For declaring that the class implements interfaces
+        __class__.implement = function(){
+            __class__.prototype._interfaces = $.toArray(arguments);
+            return __class__;
         };
 
-        var arg, _p = {}, constants = {}, _args = $.extend({}, args);
-        for (var i in _args){
-            if (_args.hasOwnProperty(i)){
-                arg = _args[i];
+        // Process the properties stripping out constants and private members.
+        var arg,                              // The current property in the loop below
+            _p = {},                          // Private members in the definition
+            constants = {},                   // Constants found in definition
+            args = $.extend({}, definition);  // For iterating while deleting from definition.
+        for (var i in args){
+            if (args.hasOwnProperty(i)){
+                arg = args[i];
                 // Handle private properties
                 if (i.startsWith("_")){
                     _p[i] = arg;
-                    delete args[i];
+                    delete definition[i];
                 }
                 // Tell each method its own name
                 else if ($.isFunction(arg)){
@@ -274,18 +273,19 @@
                 }
                 // Handle constants
                 else if (i.isUpperCase()){
-                    $.constant(i, arg, c);
+                    $.constant(i, arg, __class__);
                     constants[i] = arg;
-                    delete args[i];
+                    delete definition[i];
                 }
             }
         }
-        args._interfaces = [];
+        definition._interfaces = [];
 
 
         // The following mixins are meant to be superseded by
-        // (i.e., overridden by) corresponding properties in args.
-        $.augment(args, {
+        // (i.e., overridden by) corresponding properties in
+        // this class definition.
+        $.augment(definition, {
             /**
              * Defines how to compare instances of this class.  <strong>Does not require hash().</strong>
              *
@@ -308,8 +308,8 @@
 
 
         // Mixing in the new "class body"
-        $.extend(c.prototype, args, {
-            constructor: c,
+        $.extend(__class__.prototype, definition, {
+            constructor: __class__,
             inherited: function(){
                 var p, prop, args;
                 if (arguments.length > 0) {
@@ -318,7 +318,7 @@
                     for (var i = 1; i < arguments.length; i++){
                         args.push(arguments[i]);
                     }
-                    p = $super.prototype[prop];
+                    p = superClass.prototype[prop];
                     if (p) {
                         if (typeof p === "function" || p.constructor === Function) {
                             return p.apply(this, args);
@@ -331,7 +331,7 @@
                 }
             },
             $super: function(){
-                $super.prototype.initialize.apply(this, arguments);
+                superClass.prototype.initialize.apply(this, arguments);
             },
             toString: function(){
                 return $Object.toString(this);
@@ -351,7 +351,7 @@
             if (_p.hasOwnProperty(i)){
                 // TODO:  Strip private properties from the prototype here before re-adding them as accessor properties.
                 //$.log("className").log(c.prototype._className)
-                _private(c.prototype, i, _p[i], _p._className);
+                _private(__class__.prototype, i, _p[i], _p._className);
             }
         }
 
@@ -359,7 +359,7 @@
         // Note:  Freezing the prototype breaks unit tests.
         // The answer to the second question is probably no.
 
-        return c;
+        return __class__;
     };
 
 
