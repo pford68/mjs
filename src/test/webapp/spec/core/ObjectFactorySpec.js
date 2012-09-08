@@ -52,21 +52,16 @@ describe("mjs.getFactory()", function(){
     });
 
     it("should return a Factory", function(){
-        expect(ObjectX.build).toBeDefined();
-        expect(ObjectX.$super).toBeDefined();
-        expect(ObjectX.extend).toBeDefined();
+        try {
+            expect(Object.implement(ObjectX, $.ObjectFactory)).toBeTruthy();
+            expect(Object.implement(Schema, $.ObjectFactory)).toBeTruthy();
+        } catch (e){
+            this.fail("We should not reach this point:  " + e.message);
+        }
     });
 
 
     describe("The factory returned by getFactory()", function(){
-
-        it("should implement mjs.ObjectFactory", function(){
-            try {
-                expect(Object.implement(ObjectX, $.ObjectFactory)).toBeTruthy();
-            } catch (e){
-                this.fail("We should not reach this point:  " + e.message);
-            }
-        });
 
         describe("build()", function(){
             it("should produce objects that have the same spec as the blueprint", function(){
@@ -98,6 +93,36 @@ describe("mjs.getFactory()", function(){
                 var proto = $.getPrototype(that);
                 expect(proto.compareTo).toBeDefined();
                 expect(proto.equals).toBeDefined();
+            });
+
+
+            describe("Prototypical inheritance", function(){
+                var a, b;
+                beforeEach(function(){
+                    a = ObjectX.build({
+                        id: "333-33-3333"
+                    });
+                    b = ObjectX.build({
+                        id: "444-44-4444",
+                        equals: function(that){
+                            return this.id == that.id;
+                        }
+                    });
+                });
+
+                it("should be able to override specified properties inherited from the blueprint while creating a new object", function(){
+                    expect(b.id).toEqual("444-44-4444");
+                    expect(a.id).toEqual("333-33-3333");
+                    expect(b.equals(ObjectX.build({ id: "444-44-4444" }))).toBeTruthy();
+                });
+
+                it("overriding properties in one object should not affect other instances created by the factory", function(){
+                    expect(ObjectX.build().id).toBeUndefined();
+                });
+
+                it("overriding properties in one object should not affect the original blueprint", function(){
+                    expect(blueprint.id).toBeUndefined();
+                });
             });
 
 
