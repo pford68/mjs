@@ -81,6 +81,7 @@
         // Properties that begin with underscores are private to each object created by the factory.
         var proto = $.getPrototype(blueprint);
         $.decorate(_private).forEach(function(value, key){
+            //delete blueprint[key];
             Object.encapsulate(key, blueprint, { value: value });
         });
         $.log("getFactory", "blueprint:").log(blueprint);
@@ -102,7 +103,8 @@
              * @return {Object} An object
              */
             build: function(args){
-                return args ? Object.create($.extend({}, blueprint, args)) : Object.create(blueprint);
+                //return args ? Object.create($.extend({}, blueprint, args)) : Object.create(blueprint);  // Throws private access error in Chrome
+                return args ? $.extend(Object.create(blueprint), args) : Object.create(blueprint);
             },
 
 
