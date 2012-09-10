@@ -8,7 +8,7 @@ describe("Array.prototype", function(){
     var otherCities = ['Denver', 'Amsterdam', 'Calgary', 'Austin', 'Brisbane', 'Denton'];
 
     function contains(list, value){
-        var items = {}, result = {}, i, item;
+        var items = {}, i, item;
         for (i = 0; i < list.length; i++){
             item = list[i];
             items[item] = item;
