@@ -132,7 +132,7 @@
     $.addAdvice = function(adviser, method, transfer){
         adviser = method ? $.proxy(adviser, method) : adviser;
         if (!$.isFunction(adviser)) {
-            throw new TypeError("An adviser function is required in mjs.addAdvice", "xp/aop.js");
+            throw new TypeError("An adviser function is required in mjs.addAdvice", "mjs/core/aop.js");
         }
         var advice = Advice.build();
         advice.adviser = adviser;
