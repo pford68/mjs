@@ -156,21 +156,35 @@ describe("Array.prototype", function(){
 
     describe("reduce()", function(){
         var list = [0,1,2,3,4];
-        it("should return ", function(){
+        it("should use the accumulator function to convert the array values to a single value", function(){
             var result = list.reduce(function(prev, current){
                 return prev + current;
             });
             expect(10).toEqual(result);
         });
+
+        it("should work with the optional initial value parameter", function(){
+            var result = list.reduce(function(prev, current){
+                return prev + current;
+            }, 10);
+            expect(20).toEqual(result);
+        });
     });
 
     describe("reduceRight()", function(){
         var list = [0,1,2,3,4];
-        it("should return ", function(){
+        it("should use the accumulator function to convert the array values to a single value, starting from the end of the array", function(){
             var result = list.reduceRight(function(prev, current){
                 return "" + prev + current;
             });
             expect("43210").toEqual(result);
+        });
+
+        it("should work with the optional initial value parameter", function(){
+            var result = list.reduceRight(function(prev, current){
+                return "" + prev + current;
+            }, 10);
+            expect("1043210").toEqual(result);
         });
     });
 
