@@ -128,8 +128,8 @@
 
 
         /**
-         * @param callback
-         * @param thisVal optional Object scope for the function.
+         * @param {Function} callback
+         * @param {Object} [thisVal] Object scope for the function.
          */
         forEach: function(callback, thisVal)
         {
@@ -141,8 +141,8 @@
 
         /**
          * Creates a new array by performing a transformation function on each item in the original array.
-         * @param callback
-         * @param thisVal optional Object scope for the function.
+         * @param {Function} callback
+         * @param {Object} [thisVal] Object scope for the function.
          */
         map: function(callback, thisVal)
         {
@@ -153,8 +153,8 @@
         },
 
         /**
-         * @param callback
-         * @param thisVal optional Object scope for the function.
+         * @param {Function} callback
+         * @param {Object} [thisVal] Object scope for the function.
          */
         filter: function(callback, thisVal)
         {
@@ -169,8 +169,8 @@
         },
 
         /**
-         * @param callback
-         * @param thisVal optional Object scope for the function.
+         * @param {Function} callback
+         * @param {Object} [thisVal] Object scope for the function.
          */
         every: function(callback, thisVal)
         {
@@ -182,8 +182,8 @@
         },
 
         /**
-         * @param callback
-         * @param thisVal optional Object scope for the function.
+         * @param {Function} callback
+         * @param {Object} [thisVal] Object scope for the function.
          */
         some: function(callback, thisVal)
         {
@@ -194,11 +194,19 @@
             return false;
         },
 
+
+        /**
+         * Returns true/false for whether the specified value is present in the array.
+         *
+         * @param {*} value
+         * @return {Boolean}
+         */
         contains: function(value)
         {
+            var hasEquals = value && $.isFunction(value.equals);
             for (var i = 0, len = this.length; i < len; ++i)
             {
-                if (this[i] === value) return true;
+                if ((this[i] === value) || (hasEquals && value.equals(this[i]))) return true;
             }
             return false;
         },

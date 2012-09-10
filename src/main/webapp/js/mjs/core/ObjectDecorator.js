@@ -173,11 +173,10 @@
          * function that takes the following parameters:  (1) the value of the current property, the name of the
          * current property, and the component.  That function must return true/false.
          *
-         * @param callback
+         * @param {Function} callback
          */
         filter: function(callback){
-            var result = {}, cmp = this.component,
-                i, item;
+            var result = {};
             this.forEach(function(item, i, cmp){
                 if (callback(item, i, cmp) === true){
                     result[i] = item;
@@ -286,9 +285,19 @@
          * @return {Boolean}
          */
         contains: function(that){
+            function compare(a, b){
+                if (a && $.isFunction(a.equals)){
+                    return a.equals(b)
+                }
+                return false;
+            }
+
             var cmp = this.component;
-            for (var i in cmp){        // Intentionally not using hasOwnProperty for now.
-                if (cmp[i] == that || ($.isObject(cmp[i] && compare(cmp[i], that)))) {
+
+            // Intentionally not using hasOwnProperty:
+            // I might want to know about inherited properties.
+            for (var i in cmp){
+                if (cmp[i] == that || (compare(cmp[i], that))) {
                     return true;
                 }
             }
