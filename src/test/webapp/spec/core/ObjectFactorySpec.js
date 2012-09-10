@@ -114,14 +114,18 @@ describe("mjs.getFactory()", function(){
                     expect(b.id).toEqual("444-44-4444");
                     expect(a.id).toEqual("333-33-3333");
                     expect(b.equals(ObjectX.build({ id: "444-44-4444" }))).toBeTruthy();
+                    expect(b.equals({ id: "444-44-4444" })).toBeTruthy();
                 });
 
                 it("overriding properties in one object should not affect other instances created by the factory", function(){
                     expect(ObjectX.build().id).toBeUndefined();
+                    expect(a.equals(ObjectX.build({ id: "444-44-4444" }))).toBeFalsy();
+                    expect(a.equals(b)).toBeFalsy();
                 });
 
                 it("overriding properties in one object should not affect the original blueprint", function(){
                     expect(blueprint.id).toBeUndefined();
+                    expect(blueprint.equals(ObjectX.build({ id: "444-44-4444" }))).toBeFalsy();
                 });
             });
 
