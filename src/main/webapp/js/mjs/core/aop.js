@@ -11,8 +11,7 @@
 		var f,$execute, standalone = false,
             transfer = aopProxy.transfer,
             adviser = aopProxy.adviser;
-        aopProxy.flush();
-		
+
 		if (!advisedFunc) {
 			standalone = true;
 			$execute = arguments[1];
@@ -62,7 +61,7 @@
     //======================================================================== Public methods
 
     /**
-     * To acess there methods, you must call $.aop.add() to return a correct AOP object.
+     * To access these methods, you must call $.addAdvice() to return a correct Advice object.
      *
      * @type {Object}
      */
@@ -72,27 +71,25 @@
 
         /**
          * <p>Causes the adviser to be executed before every call to advised[advisedFunc].</p>
+         * <p>If the adviser returns a result, and you want that result, instead of the parameters,
+         * to be passed to the wrapped function, set the transfer parameter is set to "false" when
+         * calling addAdvice().  That parameter defaults to true.</p>
          *
-         * <p>If the adviser returns a result, that result, instead of the original arguments,
-         * will be sent to the original function.  If you want the original function to receive
-         * the original arguments, do not return a result from the adviser.  If, in that case,
-         * the adviser is an existing function that returns a result, wrap it in another function,
-         * and use that wrapper as the adviser.</p>
-         *
-         * @param {Object} advised
-         * @param {String} advisedFunc The name of the function that represents the pointcut
+         * @param {Object | Function} advised The function to be advised or the object containing method to be advised
+         * @param {String} [advisedFunc] The name of the function that represents the pointcut
          */
 		before: function(advised, advisedFunc) {
 			return weave("before", advised, advisedFunc, this);
 		},
 
         /**
-         * <p>Causes adviser to be executed after every call to advised[advisedFunc].
-         * The result of subsequent calls to advised[advisedFunc] is cached and can be retrieved with
-         * $.aop.push()</p>
+         * <p>Causes adviser to be executed after every call to advised[advisedFunc].</p>
+         * <p>If the original function returns a result, and you want that result, instead of the parameters,
+         * to be passed to the advising function, set the transfer parameter is set to "false" when
+         * calling addAdvice().  That parameter defaults to true.</p>
          *
-         * @param {Object} advised
-         * @param {String} advisedFunc
+         * @param {Object | Function} advised The function to be advised or the object containing method to be advised
+         * @param {String} [advisedFunc] The name of the function that represents the pointcut
          */
 		after: function(advised, advisedFunc) {
 			return weave("after", advised, advisedFunc, this);
@@ -102,21 +99,14 @@
          * <p>Wraps advised[advisedFunc] within adviser.  In order to work the advising function
          * (adviser) must have a parameter representing an "invocation" and must call invocation.proceed()
          * where the original function should be called.</p>
-         * @param {Object} advised
-         * @param {String} advisedFunc
+         *
+         * <p>The transfer parameter has no effect on this method.</p>
+         *
+         * @param {Object | Function} advised  The function to be advised or the object containing method to be advised
+         * @param {String} [advisedFunc] The name of the function that represents the pointcut
          */
 		around: function(advised, advisedFunc){
 			return weave("around", advised, advisedFunc, this);
-		},
-
-
-        /**
-         * Retrieves the result of the original function and clears the cache.
-         */
-		flush: function() {
-			var result = this.cache;
-            this.cache = null;
-            return result;
 		}
 	};
 
@@ -124,10 +114,11 @@
 
 
     /**
+     * Creates an Advice object with methods for adding advice to another function or object method.
      *
-     * @param adviser
-     * @param method
-     * @param transfer {boolean} Whether to pass the function arguments, defaults to true.
+     * @param {Object | Function} adviser The function that will add advice, or the object whose method will do so
+     * @param {String | Function} [method] The method, or the name of the method, that will add advice
+     * @param {boolean} [transfer] Whether to pass the function arguments, defaults to true.
      */
     $.addAdvice = function(adviser, method, transfer){
         adviser = method ? $.proxy(adviser, method) : adviser;
