@@ -697,7 +697,7 @@ var mjs = mjs || {};
      I think importing "polyfills," and using certain functions that should be present (or even that aren't standard
       but are added to native prototypes) is not unjustified, but minimize this file's dependencies from now on.
       */
-    $public.require("mjs/core/polyfill");
+    $public.require("mjs/core/shim");
     $public.require("mjs/core/strings");
     $public.require("mjs/i18n/" + $config.locale);
     // TODO:  Prevent core modules from depending on modules in other packages.
