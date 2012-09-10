@@ -57,9 +57,16 @@
         delete blueprint.$super;
 
 
-        blueprint = Object.freeze(blueprint);  /* Once the blueprint is set, I don't want people to change it.
-                                                  Test shows that I have to freeze (or clone) the blueprint at
-                                                  this point in the code to prevent changes. */
+        blueprint = $.clone(blueprint);  /* Once the blueprint is set, I don't want people to change it.
+                                           Tests show that I have to clone (or to freeze) the blueprint at
+                                           this point in the code to prevent changes.
+
+                                           Note:  tests showed unexpected behavior when I froze the blueprint.
+                                           In prototypical inheritance tests with build(), I found that I could not
+                                           override the original method:  it was called instead of the new method.
+                                           This was solved by copying to a shallow clone in extend(), but was
+                                           disturbing enough that I reverted back to $.clone() at this point.
+                                           */
 
         // Handling the faulty configurations
         if (config.writable != null && (config.set || config.get )){
@@ -103,6 +110,12 @@
              */
             build: function(args){
                 //return args ? Object.create($.extend({}, blueprint, args)) : Object.create(blueprint);  // Throws private access error in Chrome
+                /*
+                Note: Prototypical inheritance tests failed in Firefox (i.e., the original inherited method was called
+                instead of the new method) until I added {} as the first parameter for $.extend() to copy the
+                properties to a shallow clone and return the clone.  This is probably because I froze the blueprint
+                above.  I would not expect that to affect the new object, but apparently it might.
+                 */
                 return args ? $.extend(Object.create(blueprint), args) : Object.create(blueprint);
             },
 

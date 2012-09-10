@@ -153,6 +153,28 @@ describe("Array.prototype", function(){
         });
     });
 
+
+    describe("reduce()", function(){
+        var list = [0,1,2,3,4];
+        it("should return ", function(){
+            var result = list.reduce(function(prev, current){
+                return prev + current;
+            });
+            expect(10).toEqual(result);
+        });
+    });
+
+    describe("reduceRight()", function(){
+        var list = [0,1,2,3,4];
+        it("should return ", function(){
+            var result = list.reduceRight(function(prev, current){
+                return "" + prev + current;
+            });
+            expect("43210").toEqual(result);
+        });
+    });
+
+
     describe("flatten()", function(){
         var list = [
             ['a','b','c',[0,5,6]],

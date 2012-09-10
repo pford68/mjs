@@ -205,6 +205,72 @@
 
 
         /**
+         * The accumulator requires the following parameters:
+         * previousValue, currentValue, index, array
+         *
+         * @param accumulator
+         * @param init
+         * @return {*}
+         */
+        reduce: function(accumulator, init){
+            var i = 0, len = this.length >> 0, current;
+
+            if (!$.isFunction(accumulator)){
+                throw new TypeError("[Array.prototype.reduce] The first argument must be a function.");
+            }
+
+            if(!init) {
+                if (len === 0) throw new TypeError("[Array.prototype.reduce] Array length is 0 and no second argument");
+                current = this[0];
+                i = 1; // start accumulating at the second element
+            } else {
+                current = init;
+            }
+
+            while (i < len) {
+                if(i in this) {
+                    current = accumulator.call(undefined, current, this[i], i, this);
+                }
+                ++i;
+            }
+
+            return current;
+        },
+
+
+        /**
+         *
+         * @param accumulator
+         * @param init
+         * @return {*}
+         */
+        reduceRight: function(accumulator, init){
+            var len = this.length >> 0, i = len, current;
+
+            if (!$.isFunction(accumulator)){
+                throw new TypeError("[Array.prototype.reduceRight] The first argument must be a function.");
+            }
+
+            if(!init) {
+                if (len === 0) throw new TypeError("[Array.prototype.reduceRight] Array length is 0 and no second argument");
+                current = this[len - 1];
+                i = len - 2; // start accumulating at the second element
+            } else {
+                current = init;
+            }
+
+            do {
+                if(i in this) {
+                    current = accumulator.call(undefined, current, this[i], i, this);
+                }
+                --i;
+            } while (i > 0);
+
+            return current;
+        },
+
+
+        /**
          * This function exists largely so that clients can use arrays without having to know whether
          * they are dealing with arrays.  Clients could test whether the array implements an interface
          * that requires size(), instead of whether the object involved is an array.  This permits the
