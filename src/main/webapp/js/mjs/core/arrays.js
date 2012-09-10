@@ -209,7 +209,7 @@
          * previousValue, currentValue, index, array
          *
          * @param {Function} accumulator
-         * @param {*} init
+         * @param {*} [init]
          * @return {*}
          */
         reduce: function(accumulator, init){
@@ -241,7 +241,7 @@
         /**
          *
          * @param {Function} accumulator
-         * @param {*} init
+         * @param {*} [init]
          * @return {*}
          */
         reduceRight: function(accumulator, init){
