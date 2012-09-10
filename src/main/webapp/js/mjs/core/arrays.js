@@ -208,8 +208,8 @@
          * The accumulator requires the following parameters:
          * previousValue, currentValue, index, array
          *
-         * @param accumulator
-         * @param init
+         * @param {Function} accumulator
+         * @param {*} init
          * @return {*}
          */
         reduce: function(accumulator, init){
@@ -240,8 +240,8 @@
 
         /**
          *
-         * @param accumulator
-         * @param init
+         * @param {Function} accumulator
+         * @param {*} init
          * @return {*}
          */
         reduceRight: function(accumulator, init){
