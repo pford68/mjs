@@ -213,7 +213,7 @@
          * @return {*}
          */
         reduce: function(accumulator, init){
-            var i = 0, len = this.length >> 0, current;
+            var i = 0, len = this.size(), current;
 
             if (!$.isFunction(accumulator)){
                 throw new TypeError("[Array.prototype.reduce] The first argument must be a function.");
@@ -245,7 +245,7 @@
          * @return {*}
          */
         reduceRight: function(accumulator, init){
-            var len = this.length >> 0, i = len, current;
+            var len = this.size(), i = len, current;
 
             if (!$.isFunction(accumulator)){
                 throw new TypeError("[Array.prototype.reduceRight] The first argument must be a function.");
@@ -277,7 +277,7 @@
          * clients to use array-like structures in addition to arrays.
          */
         size: function(){
-            return this.length;
+            return this.length >> 0;
         },
 
 
