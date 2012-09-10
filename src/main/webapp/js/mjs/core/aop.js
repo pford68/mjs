@@ -134,10 +134,10 @@
         if (!$.isFunction(adviser)) {
             throw new TypeError("An adviser function is required in mjs.addAdvice", "mjs/core/aop.js");
         }
-        var advice = Advice.build();
-        advice.adviser = adviser;
-        advice.transfer = transfer != null ? transfer : true;
-        return Object.seal(advice);
+        return Object.seal(Advice.build({
+            adviser: adviser,
+            transfer: transfer != null ? transfer : true
+        }));
     }
 
 })(mjs);
