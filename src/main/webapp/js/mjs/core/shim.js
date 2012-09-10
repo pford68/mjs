@@ -24,7 +24,7 @@
                 defaults = $.toArray(arguments).slice(2);
             }
             return function() {
-                return $this.apply(that, defaults ? defaults.concat($.toArray(arguments)) : arguments);
+                return $this.apply(that, defaults ? defaults.concat($.from(arguments)) : arguments);
             }
         }
     });
