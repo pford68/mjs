@@ -219,7 +219,7 @@
      *   </p>
      *
      *
-     *   @param {Function | Object | Array} [superClass] The parent(s) class, if any.
+     *   @param {Function|Object|Array} [superClass] The parent(s) class, if any.
      *   @param {Object} definition The body of the new class
      */
     $.Class = function(superClass, definition)
