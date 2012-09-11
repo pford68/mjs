@@ -24,9 +24,9 @@ ClusterFuck.prototype = new Error();
 (function loader($){
     $.config = $.config || {};
     $.config.log = {
-        pattern: "%d [%M]%C............%m",
-        //pattern: "[%M]%C............%m",
-        dateFormat: 'MM/dd/yy:  HH:mm:ss.SSS',
+        pattern: "%d [%M]%l - %m",
+        //pattern: "[%M]%l............%m",
+        dateFormat: 'yyyy/MM/dd HH:mm:ss.SSS',
         firstModule: "INFO",
         PretendClass: "LOG"
     };

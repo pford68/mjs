@@ -149,6 +149,39 @@
          */
         isUpperCase: function(){
             return this.toUpperCase() == this;
+        },
+
+
+        /**
+         * Adds padding before the string
+         *
+         * @param {Integer} len The number of spaces to add before the string
+         * @return {String} The padded string.
+         */
+        justify: function(len){
+            var str = [];
+            len = parseInt(len);
+            while(len-- > 0){
+                str.push(" ");
+            }
+            str.push(this);
+            return str.join("");
+        },
+
+
+        /**
+         * Adds padding after the string
+         *
+         * @param {Integer} len The number of spaces to add before the string
+         * @return {String} The padded string.
+         */
+        rightJustify: function(len){
+            var str = [this];
+            len = parseInt(len);
+            while(len-- > 0){
+                str.push(" ");
+            }
+            return str.join("");
         }
         
     };
