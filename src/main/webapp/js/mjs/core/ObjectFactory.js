@@ -69,17 +69,18 @@
                                            */
 
         // Handling the faulty configurations
-        if (config.writable != null && (config.set || config.get )){
+        if (config.writable != null && (config.set || config.get)){
+            delete config.writable;
             $.log("getFactory", "The property descriptors writable and get/set are incompatible; getFactory() " +
                 "deleted writable from the configuration.");
         }
 
         /*
-        The configuration parameter slows object creation by 70% in performance test,
+        The configuration parameter slows object creation by ~70% in performance tests,
         so I try to perform it only once per factory, calling Object.create() on the
         blueprint to apply the configuration.  Doing so, removes the properties from
-        the resulting blueprint and puts them in that blueprint's prototype.
-        TODO: examine the implications of that last fact.  One of them appears in the code below.
+        the resulting blueprint object and puts them in that blueprint's prototype.
+        TODO: examine the implications of that last fact.  One of them appears in Factory.prototype.extend().
          */
         blueprint = config ? Object.create(blueprint, config) : Object.create(blueprint);
         //$.log("getFactory", "blueprint before encapsulate:").log(blueprint);
@@ -87,7 +88,6 @@
         // Properties that begin with underscores are private to each object created by the factory.
         var proto = $.getPrototype(blueprint);
         $.decorate(_private).forEach(function(value, key){
-            //delete blueprint[key];
             Object.encapsulate(key, blueprint, { value: value });
         });
         $.log("getFactory", "blueprint:").log(blueprint);
@@ -114,7 +114,9 @@
                 Note: Prototypical inheritance tests failed in Firefox (i.e., the original inherited method was called
                 instead of the new method) until I added {} as the first parameter for $.extend() to copy the
                 properties to a shallow clone and return the clone.  This is probably because I froze the blueprint
-                above.  I would not expect that to affect the new object, but apparently it might.
+                above.
+
+                Update: I have since reverted to cloning the blueprint above, instead of freezing it.
                  */
                 return args ? $.extend(Object.create(blueprint), args) : Object.create(blueprint);
             },
@@ -132,7 +134,7 @@
             extend: function(args, config){
                 $.log("blueprint in extend").log(blueprint);
                 args.$super = blueprint;
-                var $blueprint = $.extend({}, proto, args);
+                var $blueprint = $.extend({}, proto, args);  //The properties are all in blueprint's prototype.
                 return $.getFactory($blueprint, config);
             },
 
