@@ -43,6 +43,12 @@
     });
 
 
+    function LogEvent(context, caller){
+        this.name = caller.name;
+        this.location = caller.caller ? caller.caller.name : context.callee.caller.name;
+        this.datetime = new Date();
+    }
+
 
     function getLogLevel(logger){
         if (!logger.logLevel){
@@ -54,6 +60,7 @@
         }
         return logger.logLevel;
     }
+
 
 
     /*
@@ -68,72 +75,58 @@
         this.logger = Object.seal(logger);
     }
     LoggingDecorator.prototype = {
-        log: function(msg){
+        log: function LOG(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "LOG";
+                logger.logEvent = new LogEvent(arguments, LOG);
                 logger.log(msg);
             }
         },
-        info: function(msg){
+        info: function INFO(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "INFO";
+                logger.logEvent = new LogEvent(arguments, INFO);
                 logger.info(msg);
             }
         },
-        error: function(msg){
+        error: function ERROR(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "ERROR";
+                logger.logEvent = new LogEvent(arguments, ERROR);
                 logger.error(msg);
             }
         },
-        debug: function(msg){
+        debug: function DEBUG(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "DEBUG";
+                logger.logEvent = new LogEvent(arguments, DEBUG);
                 logger.debug(msg);
             }
         },
-        warn: function(msg){
+        warn: function WARN(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "WARN";
+                logger.logEvent = new LogEvent(arguments, WARN);
                 logger.warn(msg);
             }
         },
         /*
         Trace is not required by ILogger interface.
          */
-        trace: function(msg){
+        trace: function TRACE(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "TRACE";
+                logger.logEvent = new LogEvent(arguments, TRACE);
                 logger.trace(msg);
             }
         },
         /*
          Assert is not required by ILogger interface.
          */
-        assert: function(msg){
+        assert: function ASSERT(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
-                logger.location = arguments.callee.caller.name;
-                logger.datetime = new Date();
-                logger.logEvent = "ASSERT";
+                logger.logEvent = new LogEvent(arguments, ASSERT);
                 logger.assert(msg);
             }
         }
@@ -188,7 +181,9 @@
     Logger.render = function(msg){
         var pattern = props.pattern,
             dateFormat = props.dateFormat,
+            logEvent = this.logEvent,
             re;
+        // Replacing each symbol found in the pattern with the corresponding log event values
         SYMBOLS.forEach($.proxy(this, function(p, index){
             re  = new RegExp(p, ['g']);
             switch(p){
@@ -199,13 +194,13 @@
                     pattern = pattern.replace(re, msg);
                     break;
                 case '%l':
-                    pattern = pattern.replace(re, this.location);
+                    pattern = pattern.replace(re, logEvent.location);
                     break;
                 case '%p':
-                    pattern = pattern.replace(re, this.logEvent);
+                    pattern = pattern.replace(re, logEvent.name);
                     break;
                 case '%d':
-                    pattern = pattern.replace(re, DateFormat.format(this.datetime, dateFormat));
+                    pattern = pattern.replace(re, DateFormat.format(logEvent.datetime, dateFormat));
                     break;
                 case '%-[0-9]+':
                     var num;
@@ -234,16 +229,14 @@
             /*
             Definitions of the properties listed below:
             (1) subject:  the class, function, object, file, etc. being logged.
-            (2) caller:   the location were the log event occurred.
-            (3) datetime:  the date/time of the log event.
-            (4) fileName:
-            (5) logLevel: the minimum log level of the logger.
-            (6) logEvent: the log event type: e.g., LOG, INFO.
+            (2) fileName:
+            (3) logLevel: the minimum log level of the logger.
+            (4) logEvent: the LogEvent object containing the event name (e.g., INFO),
+                          date/time of the event, and the location (e.g., the method
+                          containing the log statement.
              */
             $.extend(loggerInstance, {
                 subject:  (that && that.name) ? that.name : arguments.callee.caller.name,
-                location: null,
-                datetime: null,
                 fileName: null,
                 logLevel: null,
                 logEvent: null
