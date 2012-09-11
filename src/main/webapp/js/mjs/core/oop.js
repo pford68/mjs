@@ -12,8 +12,36 @@
         writable: true
     });
 
-    // A private object for passing between constructors.
+
+    /* The following mixins are meant to be superseded by (i.e., overridden by)
+     corresponding properties in a class definition. */
+    var ClassMixin = {
+        /**
+         * Defines how to compare instances of this class.  <strong>Does not require hash().</strong>
+         *
+         * @param that
+         * @return {Boolean}
+         */
+        equals: function(that){
+            return this === that;
+        },
+        /**
+         * Created to support hashtables, though ironically mjs.util.Hashtable class does not use it.
+         * HashMap does, however.
+         *
+         * @return {Object}
+         */
+        hash: function(){
+            return $.UUID();  // No, JSON.stringify() is not a solution here:  can't guarantee the order
+        }
+    };
+
+
+    /*
+    A private object for passing between constructors.
+     */
     function inherit(){}
+
 
     /*
     Used to determine whether an object implements an interface, without throwing an error if it doesn't,
@@ -24,7 +52,7 @@
         if (!that._interfaces || !($interface instanceof Interface)) return false;
         if (!$.isArray(that._interfaces))
         {
-            $.error("$implements", "The interfaces property should be an Array:  " + obj._interfaces);
+            $.error("$implements", "The interfaces property should be an Array:  " + that._interfaces);
         }
 
         var i, len = that._interfaces.length;
@@ -65,6 +93,10 @@
     }
 
 
+    /*
+    Checks whether "value" is present in "that."  For now I don't use hasOwnProperty on that:
+    I think I may want to see inherited properties.
+     */
     function contains(that, value){
         for (var i in that){
             if (that[i] == value) return true; // Leaving out hasOwnProperty() purposely for now.
@@ -73,8 +105,10 @@
     }
 
 
-    // Creates a private property named k in that.
-    function _private(that, k, v, className){
+    /*
+    Creates a private property named k in that.
+     */
+    function encapsulate(that, k, v, className){
         var _p = v,
             errorMsg = "{0} is accessible only inside the class {1}";
         delete that[k];
@@ -101,6 +135,8 @@
         });
 
     }
+
+
 
     //----------------------------Interfaces
     function Interface(a, caller)
@@ -132,6 +168,10 @@
             return new Interface(args);
         }
     };
+
+
+
+
 
 
     //============================================================= Public
@@ -172,8 +212,14 @@
      *   </ul>
      *   </p>
      *
+     *   <p>Multiple inheritance is supported, by using an array of super classes/objects in the first parameter.
+     *   Be aware that the instanceof operator will no longer behave as expected if multiple inheritance is used.
+     *   Again that array can contain objects, Classes, or functions (latter case cause the class to inherit
+     *   methods from the functions' prototypes).
+     *   </p>
      *
-     *   @param {Function|Object} [superClass] The parent class, if any.
+     *
+     *   @param {Function | Object | Array} [superClass] The parent(s) class, if any.
      *   @param {Object} definition The body of the new class
      */
     $.Class = function(superClass, definition)
@@ -192,6 +238,22 @@
             superClass = null;
         }
 
+        // Multiple inheritance
+        if (Array.isArray(superClass)){
+            var parents = superClass;
+            superClass = function Multiple(){};
+
+            /* We need to mix all of the parents into Multiple.prototype.
+               Thus, for any parents that are functions, we need the prototype. */
+            parents = parents.map(function(item){
+                return $.isFunction(item) ? item.prototype: item;
+            });
+
+            // Mixing the parents into the new super class constructor's prototype.
+            $.proxy($, "extend", superClass.prototype).apply(null, parents);
+        }
+
+
         // 2012/08/02:  Transitioning to using constructor instead of initialize.
         if (definition.hasOwnProperty("constructor")){
             definition.initialize = definition.constructor;
@@ -205,7 +267,7 @@
 
         // New class
         __class__ = function(){
-            var len = arguments.length, $sinit /* Super constructor */;
+            var $sinit /* Super constructor */;
             /*
              Calling the super class constructor first (if parameter-less), like Java does.
              */
@@ -243,6 +305,8 @@
 
         };
 
+
+
         // Extend the parent class, if any, ensuring that instanceof works as expected for subclasses.
         if (typeof superClass === 'function') {
             __class__.prototype = new superClass(inherit);
@@ -256,7 +320,7 @@
 
         // Process the properties stripping out constants and private members.
         var arg,                              // The current property in the loop below
-            _p = {},                          // Private members in the definition
+            my = {},                          // Private members in the definition
             constants = {},                   // Constants found in definition
             args = $.extend({}, definition);  // For iterating while deleting from definition.
         for (var i in args){
@@ -264,7 +328,7 @@
                 arg = args[i];
                 // Handle private properties
                 if (i.startsWith("_")){
-                    _p[i] = arg;
+                    my[i] = arg;
                     delete definition[i];
                 }
                 // Tell each method its own name
@@ -279,56 +343,19 @@
                 }
             }
         }
-        definition._interfaces = [];
 
-
-        // The following mixins are meant to be superseded by
-        // (i.e., overridden by) corresponding properties in
-        // this class definition.
-        $.augment(definition, {
-            /**
-             * Defines how to compare instances of this class.  <strong>Does not require hash().</strong>
-             *
-             * @param that
-             * @return {Boolean}
-             */
-            equals: function(that){
-                return this === that;
-            },
-            /**
-             * Created to support hashtables, though ironically mjs.util.Hashtable class does not use it.
-             * HashMap does, however.
-             *
-             * @return {Object}
-             */
-            hash: function(){
-                return $.UUID();  // No, JSON.stringify() is not a solution here:  can't guarantee the order
-            }
-        });
-
+        // Mixing in default implementations of some methods that all classes should have.
+        $.augment(definition, ClassMixin);
 
         // Mixing in the new "class body"
         $.extend(__class__.prototype, definition, {
+            _interfaces: [],
             constructor: __class__,
             inherited: function(){
-                var p, prop, args;
-                if (arguments.length > 0) {
-                    args = [];
-                    prop = arguments[0];
-                    for (var i = 1; i < arguments.length; i++){
-                        args.push(arguments[i]);
-                    }
+                var args = $.from(arguments),
+                    prop = args.shift(),
                     p = superClass.prototype[prop];
-                    if (p) {
-                        if (typeof p === "function" || p.constructor === Function) {
-                            return p.apply(this, args);
-                        } else {
-                            return p[prop];
-                        }
-                    } else {
-                        // TODO
-                    }
-                }
+                return $.isFunction(p) ? p.apply(this, args) : p[prop];
             },
             $super: function(){
                 superClass.prototype.initialize.apply(this, arguments);
@@ -341,28 +368,36 @@
             }
         });
 
-        // TODO:  consider adding code to execute a "static initializer" here for customizing the class as a whole:
-        // e.g., calling Object.defineProperties().
 
-        // Adding private accessor properties to the prototype.  They have to be added after the
-        // public methods are mixed in:  the accessors for the property need to determine whether the function
-        // the attempts to access the property is in the prototype.
-        for (i in _p){
-            if (_p.hasOwnProperty(i)){
+
+        /* TODO:  consider adding code to execute a "static initializer" here for customizing the class as a whole:
+           e.g., for calling Object.defineProperties(). */
+
+        /* Adding private accessor properties to the prototype.  They have to be added after the
+           public methods are mixed in:  the accessors for the property need to determine whether the function
+           the attempts to access the property is in the prototype. */
+        for (i in my){
+            if (my.hasOwnProperty(i)){
                 // TODO:  Strip private properties from the prototype here before re-adding them as accessor properties.
-                //$.log("className").log(c.prototype._className)
-                _private(__class__.prototype, i, _p[i], _p._className);
+                encapsulate(__class__.prototype, i, my[i], my._className);
             }
         }
 
-        // TODO: Do we want to freeze the prototype?  How about the instance?
-        // Note:  Freezing the prototype breaks unit tests.
-        // The answer to the second question is probably no.
+        /*
+        TODO: Do we want to freeze the prototype?  How about the instance?
+        Note:  Freezing the prototype breaks unit tests.
+        The answer to the second question is probably no.
+        */
 
         return __class__;
     };
 
 
+
+
+
+
+    //---------------------------------------------- Object namespace extensions
     var $Object = {
         
         isa: function(obj, args)
@@ -428,7 +463,22 @@
             if (options.addGetter === true){
                 that["get" + pName.replace(/$_/,"")] = function(){ return that[prop] };
             }
-            _private(that, prop, value, className)
+            encapsulate(that, prop, value, className)
+        },
+
+
+        /**
+         *
+         * @param props
+         * @param that
+         * @param options
+         */
+        encapsulateAll: function(props, that, options){
+            for (var i in props){
+                if (props.hasOwnProperty(i)){
+                    $Object.encapsulate(props[i], that, options)
+                }
+            }
         }
     };
 
@@ -442,19 +492,18 @@
     $.extend(Object, $Object);
 
 
-    // Why did I do this?
-    /*
-    $.augment(Function.prototype, {
-        implement: $Object.implement
-    });
-    */
 
-    // Aliases
+
+
+    //----------------------------------Aliases
     Object.finalizes = Object.implement;
     Object.fulfills = Object.implement;
 
 
 
+
+
+    //---------------------------------Exceptions
     $.AbstractMethodError = (function(){
         function AbstractMethodError(msg){
             this.message += msg;

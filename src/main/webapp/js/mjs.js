@@ -596,10 +596,9 @@ var mjs = mjs || {};
                 defaults = $public.toArray(arguments).slice(2);
             }
             return function() {
-                return fcn.apply(that, defaults ? defaults.concat($public.toArray(arguments)) : arguments);
+                return fcn.apply(that, defaults ? defaults.concat($public.from(arguments)) : arguments);
             }
         },
-
 
 
         /**
