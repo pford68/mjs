@@ -206,7 +206,7 @@
                     var num;
                     (pattern.match(re) || []).forEach(function(match){
                         num = match.replace("%-","");
-                        pattern = pattern.replace(re, "%".justify(num));
+                        pattern = pattern.replace("%-" + num, "%".justify(num));
                     });
                     break;
             }
