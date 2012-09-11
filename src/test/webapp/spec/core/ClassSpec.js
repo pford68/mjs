@@ -2,6 +2,7 @@ describe("mjs.Class() suite", function() {
     var $ = mjs;
 
     $.require("mjs/core/oop");
+    $.require("mjs/core/arrays"); // For testing
 
     var classBody, body, SuperClass, SubClass, SubSubClass,
         superClassObj, subClassObj, subSubClassObj;
@@ -47,6 +48,12 @@ describe("mjs.Class() suite", function() {
         subClassObj = new SubClass({id: 'child', newProp: "this should not be added"});
         subSubClassObj = new SubSubClass();
     });
+
+
+    it("should contain only the expected members, nothing unexpected mixed in", function(){
+        expect(SuperClass.isFunction).toBeUndefined();
+    });
+
 
     describe("Each resulting class", function(){
         it("should still be a function", function(){
@@ -206,9 +213,73 @@ describe("mjs.Class() suite", function() {
     });
 
 
-    it("should contain only the expected members, nothing unexpected mixed in", function(){
-        expect(SuperClass.isFunction).toBeUndefined();
+    describe("Multiple Inheritance", function(){
+        var Notifier,
+            ObservableImpl = {
+                addListener: function(listener){
+                    if (!this.subscribers) this.subscribers = [];
+                    this.subscribers.push(listener);
+                },
+                removeListener: function(listener){
+                    this.subscribers.remove(this.subscribers.indexOf(listener))
+                },
+                publish: function(args){
+                    this.subscribers.forEach(function(item){
+                        item(args);
+                    });
+                }
+            },
+            IterableImpl = {
+                forEach: function(callback){
+                    if (!this.items) this.items = [];
+                    var items = this.items;
+                    for (var i = 0, len =  items.length; i < len; ++i){
+                        callback(items[i]);
+                    }
+                }
+            };
+        beforeEach(function(){
+            Notifier = $.Class([SuperClass, ObservableImpl, IterableImpl],{
+                initialize: function(){
+                    this.items = [];
+                }
+            })
+        });
+
+        it("instances of the class should have all of the methods in all of the parents", function(){
+            var n = new Notifier();
+            expect($.isFunction(n.forEach)).toBeTruthy();
+            expect($.isFunction(n.addListener)).toBeTruthy();
+            expect($.isFunction(n.removeListener)).toBeTruthy();
+            expect($.isFunction(n.setMessage)).toBeTruthy();
+            expect($.isFunction(n.colorize)).toBeTruthy();
+
+            var msg = "I'll be damned, it works";
+            n.setMessage(msg);
+            expect(n.message).toEqual(msg);
+
+            var listener = {
+                msg: "",
+                func: function(args){
+                    this.msg = args.msg;
+                    return this.msg;
+                }
+            };
+            n.addListener($.proxy(listener, "func"));
+            n.publish({ msg: "Huh?"});
+            expect(listener.msg).toEqual("Huh?");
+        });
+
+        it("The meaning of \"this\" should be fixed properly in inherited methods", function(){
+
+        });
+
+        it("The instanceof operator should return false for all parents: instanceof does not support multiple inheritance", function(){
+
+        });
     });
+
+
 
 
     describe("Any property whose name is all upper case should be a constant and static", function(){
@@ -403,7 +474,7 @@ describe("mjs.Class() suite", function() {
             expect(calls).toEqual(1);    // Just making sure that the super constructor was still only called once.
         });
 
-        it("should have an inherited() method for invoking a super class method or for returning a superclas property.", function(){
+        it("should be able to invoke a super class method through inherited()", function(){
             var msg = "This is a great message.";
             subClassObj.inherited("setMessage", msg);
             expect(subClassObj.message).toEqual(msg);
