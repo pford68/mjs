@@ -20,7 +20,7 @@
     var name = arguments.callee.name;
     function getName(){ return name; }
 
-    var o = Object.create({
+    var o = Object.define({
     }, {
         src: {
             get: function(){ return src; },
@@ -53,14 +53,14 @@
     $.log("o.message was not configurable and should not be deletable:  " + o.message);
 
 
-    $.log("New o").log(Object.create(o));    // Object { src="A-OK", message = "Huh?"}
-    var b = Object.create(o, {
+    $.log("New o").log(Object.define(o));    // Object { src="A-OK", message = "Huh?"}
+    var b = Object.define(o, {
         test: { value: "OK", writable: false, enumerable: true }
     });
     b.src="WTF?";
     $.log("Object B, inherits from o").log(b);  // Object { src="A-WTF?", message = "Huh?"}
 
-    $.Exception = Object.create({}, {
+    $.Exception = Object.define({}, {
         src: {
             set: function(value){ src = getName(); },
             get: function(){ return src; },

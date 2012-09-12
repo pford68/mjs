@@ -274,8 +274,10 @@ describe("mjs.Class() suite", function() {
 
         });
 
-        it("The instanceof operator should return false for all parents: instanceof does not support multiple inheritance", function(){
-
+        it("The instanceof operator should return false for all parent classes: instanceof does not support multiple inheritance", function(){
+            var n = new Notifier();
+            expect(n instanceof SuperClass).toBeFalsy();
+            // ObservableImpl and IterableImpl are objects and can't be used with instanceof.
         });
     });
 
