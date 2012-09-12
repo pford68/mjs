@@ -11,9 +11,8 @@
  * @author Philip Ford
  */
 (function mLogFactory($) {
-    $.module("mjs/logging");
     $.require("mjs/core/strings");
-    $.require("mjs/xp/logging/interfaces");
+    $.require("mjs/logging/interfaces");
     $.require("mjs/core/ObjectFactory");
     $.require("mjs/core/ObjectDecorator");
     $.require("mjs/core/oop");
