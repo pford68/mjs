@@ -15,6 +15,7 @@
     $.require("mjs/core/strings");
     $.require("mjs/xp/logging/interfaces");
     $.require("mjs/core/ObjectFactory");
+    $.require("mjs/core/ObjectDecorator");
     $.require("mjs/core/oop");
     $.require("mjs/util/DateFormat");
 
@@ -22,7 +23,7 @@
     var $config = $.config || {},                           // The log configuration
         props = $config.log || {},                          // Log configuration properties
         Logger,                                             // The logger instance
-        SYMBOLS = "%-[0-9]+ %M %m %l %p %d".split(/\s+/),   // Supported symbols in layout patterns
+        symbolCommands,                                     // Supported symbols and handlers
         LOG_LEVELS = Object.freeze({                        // Supported log levels
             ERROR: 1,
             WARN: 2,
@@ -42,11 +43,60 @@
         dateFormat: "yyyy-MM-dd HH:mm:ss.SSS"
     });
 
+    /*
+    Supported symbols and their handlers.  Theoretically, we could let developers add handlers for symbols,
+    or override existing ones, but that is not supported yet.  Supporting it, however, would be easy now.
+     */
+    symbolCommands = {
+        JUSTIFY: {
+            value: /%-[0-9]+/g,
+            execute: function(format, logger){
+                var num;
+                (format.match(this.value) || []).forEach(function(match){
+                    num = match.replace("%-","");
+                    format = format.replace("%-" + num, "%".justify(num));
+                });
+                return format;
+            }
+        },
+        CLASSNAME: {
+            value: /%M/g,
+            execute: function(format, logger){
+                return format.replace(this.value, logger.subject);
+            }
+        },
+        MESSAGE: {
+            value: /%m/g,
+            execute: function(format, logger){
+                return format.replace(this.value, logger.logEvent.message);
+            }
+        },
+        LOCATION: {
+            value: /%l/g,
+            execute: function(format, logger){
+                return format.replace(this.value, logger.logEvent.location);
+            }
+        },
+        EVENT: {
+            value: /%p/g,
+            execute: function(format, logger){
+                return format.replace(this.value, logger.logEvent.name);
+            }
+        },
+        DATETIME: {
+            value: /%d/g,
+            execute: function(format, logger){
+                return format.replace(this.value, DateFormat.format(logger.logEvent.datetime, props.dateFormat));
+            }
+        }
+    };
 
-    function LogEvent(context, caller){
+
+    function LogEvent(context, caller, message){
         this.name = caller.name;
         this.location = caller.caller ? caller.caller.name : context.callee.caller.name;
         this.datetime = new Date();
+        this.message = message;
     }
 
 
@@ -78,35 +128,35 @@
         log: function LOG(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
-                logger.logEvent = new LogEvent(arguments, LOG);
+                logger.logEvent = new LogEvent(arguments, LOG, msg);
                 logger.log(msg);
             }
         },
         info: function INFO(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
-                logger.logEvent = new LogEvent(arguments, INFO);
+                logger.logEvent = new LogEvent(arguments, INFO, msg);
                 logger.info(msg);
             }
         },
         error: function ERROR(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
-                logger.logEvent = new LogEvent(arguments, ERROR);
+                logger.logEvent = new LogEvent(arguments, ERROR, msg);
                 logger.error(msg);
             }
         },
         debug: function DEBUG(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
-                logger.logEvent = new LogEvent(arguments, DEBUG);
+                logger.logEvent = new LogEvent(arguments, DEBUG, msg);
                 logger.debug(msg);
             }
         },
         warn: function WARN(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
-                logger.logEvent = new LogEvent(arguments, WARN);
+                logger.logEvent = new LogEvent(arguments, WARN, msg);
                 logger.warn(msg);
             }
         },
@@ -116,7 +166,7 @@
         trace: function TRACE(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
-                logger.logEvent = new LogEvent(arguments, TRACE);
+                logger.logEvent = new LogEvent(arguments, TRACE, msg);
                 logger.trace(msg);
             }
         },
@@ -126,11 +176,12 @@
         assert: function ASSERT(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
-                logger.logEvent = new LogEvent(arguments, ASSERT);
+                logger.logEvent = new LogEvent(arguments, ASSERT, msg);
                 logger.assert(msg);
             }
         }
     };
+
 
 
     /*
@@ -142,7 +193,7 @@
     } else {
         function execute(that, op, msg){
             var c = console[op] ? $.proxy(console, op) : $.proxy(console, "log");
-            if (msg != null) c(that.render(msg));
+            if (msg != null) c(that.render());
         }
         /*
         The default ConsoleLogger
@@ -176,43 +227,23 @@
         };
     }
 
+
+
     /* Add the final render() method.  This method is not provided by Logger implementations.
        The Logger is sealed when a LoggingDecorator is created, in LogFactory.getLogger(). */
-    Logger.render = function(msg){
-        var pattern = props.pattern,
-            dateFormat = props.dateFormat,
-            logEvent = this.logEvent,
-            re;
+    Logger.render = function(){
+        var format = props.pattern;
+
         // Replacing each symbol found in the pattern with the corresponding log event values
-        SYMBOLS.forEach($.proxy(this, function(p, index){
-            re  = new RegExp(p, ['g']);
-            switch(p){
-                case '%M':
-                    pattern = pattern.replace(re, this.subject);
-                    break;
-                case '%m':
-                    pattern = pattern.replace(re, msg);
-                    break;
-                case '%l':
-                    pattern = pattern.replace(re, logEvent.location);
-                    break;
-                case '%p':
-                    pattern = pattern.replace(re, logEvent.name);
-                    break;
-                case '%d':
-                    pattern = pattern.replace(re, DateFormat.format(logEvent.datetime, dateFormat));
-                    break;
-                case '%-[0-9]+':
-                    var num;
-                    (pattern.match(re) || []).forEach(function(match){
-                        num = match.replace("%-","");
-                        pattern = pattern.replace("%-" + num, "%".justify(num));
-                    });
-                    break;
-            }
+        format = symbolCommands.JUSTIFY.execute(format, this); /* JUSTIFY must come first, but the order
+                                                                  of iteration below is not guaranteed,
+                                                                  so I call it first. */
+        $.decorate(symbolCommands).forEach($.proxy(this, function(cmd, key){
+            if (key !== "JUSTIFY") format = cmd.execute(format, this);
         }));
-        return pattern;
+        return format;
     };
+
 
 
     // Create the LogFactory singleton and set the Logger type produced by the factory.
