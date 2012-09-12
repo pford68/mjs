@@ -17,7 +17,29 @@
 
 
     //=========================================================== Public
+    /*
+    Notes:
+    (1) I have considered adding a Delegate constructor/function, but in retrospect,
+        $.Publisher already is one.  For example:
+
+        var clickDelegate = new $.Publisher();
+        someFunction.subscribe(clickDelegate);
+        ... // Adding more subscribers
+        $.addListener(document.body, "click", "publish", clickDelegate);
+     */
     $public = {
+
+        Event: (function(){
+            function NormalizedEvent(){
+
+            }
+            NormalizedEvent.prototype = new Event();
+            $.augment(NormalizedEvent.prototype, {
+
+            });
+            return NormalizedEvent;
+        })(),
+
 
         /**
          *
@@ -25,8 +47,8 @@
         Listener: (function () {
             /*
             Notes:
-            - Holding a reference to the source (in this.src) is dangerous memory-wise, but merely holding the
-              ID is too since it can be deleted.
+            (1) Holding a reference to the source (in this.src) is dangerous memory-wise, but merely holding the
+                ID is too since it can be deleted.
              */
             function Listener(src, evt, func, scope) {
                 this.id = $.UUID();
@@ -42,12 +64,15 @@
 
 
         /**
+         * Adds an event listener to an HTMLElement, an Object, or a function.  In the case of Objects or
+         * Functions, say, that an Object (that) has a dataLoaded property, with a $.Publisher assigned to it,
+         * then you can add a listener with $.addListener(that, "dataLoaded", function(e){..}).
          *
-         * @param src
-         * @param evt
-         * @param cmd
-         * @param scope
-         * @return {*}
+         * @param {Object|HTMLElement|Function|mjs.Listener} src The source of the event
+         * @param {String} evt The event type:  e.g., "click"
+         * @param {Function|String} cmd The function to execute when the event occurs
+         * @param {Object} [scope] The object scope of cmd.
+         * @return {mjs.Listener} An mjs.Listener object.
          */
         addListener: function(src, evt, cmd, scope) {
             var args, // If a config object was passed, it is assigned to args
@@ -74,7 +99,7 @@
 
             Note: I am NOT creating a new Publisher if the Publisher property does
             not exist.  In other words, the src must support the event by already having
-            a declared publisher.
+            declared the property and having assigned a publisher assigned to it.
              */
             if (Object.isa(se, $.Publisher)){
                 cmd.subscribe(se);
@@ -103,8 +128,10 @@
 
 
         /**
+         * Un-registers an event handler with its source and removes the listener from the internal
+         * listener registry.
          *
-         * @param {$.Listener} listener
+         * @param {mjs.Listener} listener The listener to remove.
          */
         removeListener: function(listener) {
             var src = listener.src,
@@ -112,7 +139,7 @@
 
             /*
             Merging with the $.Publisher API.
-            If the event is a Publisher, unsubsrcibe and return.
+            If the event is a Publisher, un-subscribe and return.
              */
             if (Object.isa(evt, $.Publisher)){
                 listener.execute.unsubscribe(evt);
@@ -177,7 +204,29 @@
             } else {
                 src.fireEvent("on" + event.eventType, event);
             }
-        }
+        },
+
+
+        Delegate: (function(){
+            function Delegate(src, evt){
+                this.src = src;
+                this.evt = evt;
+                this.listener = new $.Publisher();
+                $public.addListener(src, evt, "publish", this.listener);
+            }
+            $.extend(Delegate.prototype, {
+                add: function(key, cmd, scope){
+                    cmd = scope ? $.proxy(scope, cmd) : cmd;
+                    this.listener.add(function(){
+                        if (e.target.id === key) cmd.apply(null, arguments);
+                    });
+                },
+                dispatch: function(e){
+                    this.listener.publish(e.data);
+                }
+            });
+            return Delegate;
+        })()
     };
 
 
