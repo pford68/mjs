@@ -3,7 +3,7 @@
 <head>
     <title>Testing Log Factory</title>
     <meta charset="utf-8">
-    <script type="text/javascript" src="js/mjs.js" data-jspath="js" data-debugEnabled="true"></script>
+    <script type="text/javascript" src="../js/mjs.js" data-jspath="../js" data-debugEnabled="true"></script>
 </head>
 <body>
     <label>Message:  <input type="text" id="text" size="25" /></label>
@@ -15,11 +15,11 @@
 </body>
 <script>
 
-function ClusterFuck(){
-    this.message = "A ClusterFuck occurred";
-    this.name = 'ClusterFuck';
+function Catastrophe(){
+    this.message = "A Catastrophe occurred";
+    this.name = 'Catastrophe';
 }
-ClusterFuck.prototype = new Error();
+Catastrophe.prototype = new Error();
 
 (function loader($){
     $.config = $.config || {};
@@ -75,8 +75,8 @@ ClusterFuck.prototype = new Error();
     Logger.warn("warning");
 
     function test(){
-        Logger.error("About to throw a ClusterFuck");
-        throw new ClusterFuck();
+        Logger.error("About to throw a Catastrophe");
+        throw new Catastrophe();
     }
 
     try {
