@@ -23,29 +23,28 @@ function Catastrophe(){
 Catastrophe.prototype = new Error();
 
 (function loader($){
-    $.config = $.config || {};
-    $.config.log = {
-        pattern: "%d [%M] %p%-5l - %m",
-        //pattern: "[%M]%l............%m",
-        dateFormat: 'yyyy/MM/dd HH:mm:ss.SSS',
-        firstModule: "INFO",
-        PretendClass: "LOG"
-    };
-
     $.require("mjs/logging/interfaces");
     $.require("mjs/core/aop");
 
 
     var AlertLogger = {
         log: function(msg){
-            alert(this.render(msg));
+            alert(msg);
         }
     };
     ['info','warn','debug','error'].forEach(function(item){
         AlertLogger[item] = function(msg){ this.log(msg); }
     });
 
-    //$.config.logger = AlertLogger;
+
+    $.config.logging = {
+        //logger: AlertLogger,
+        pattern: "%d [%M] %p%-5l - %m",
+        //pattern: "[%M]%l............%m",
+        dateFormat: 'yyyy/MM/dd HH:mm:ss.SSS',
+        firstModule: "INFO",
+        PretendClass: "LOG"
+    };
 
     $.require("mjs/logging/LogFactory");
 })(mjs);

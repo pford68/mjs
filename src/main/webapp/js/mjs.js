@@ -91,10 +91,6 @@ var mjs = mjs || {};
         });
     }
 
-    function writeLogMessage(src, msg) {
-        return ['[', src, '] ', msg].join('');
-    }
-
     function startsWith(str, c){
         return (c === str.substr(0, c.length));
     }
@@ -213,6 +209,13 @@ var mjs = mjs || {};
     //===================================================================================== Public
     $public = {
 
+        /**
+         * An object holding configuration properties for mjs.  Created automatically if not
+         * created by a config file.  mjs.config properties can be added, deleted, and changed,
+         * but mjs.config not deleted: writable is true; configurable is false.
+         */
+        config: $.config || {}, // Made permanent in configure() above
+
         isDebugEnabled: function(){
             return debugEnabled;
         },
@@ -231,8 +234,7 @@ var mjs = mjs || {};
 
         error: function(src, msg) {
             if (!debugEnabled) return;
-            var $msg = writeLogMessage(src, msg);
-            throw new Error($msg);
+            throw new Error(['[', src, '] ', msg].join(''));
         },
 
 

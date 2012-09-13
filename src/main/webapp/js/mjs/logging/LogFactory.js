@@ -8,6 +8,19 @@
  *      log, info, debug, and error--without explicitly checking the log configuration (e.g., not
  *      having to call isLogEnabled() within the new log() function).
  *
+ *
+ * DESIGN:
+ *  Read log configuration
+ *  Create LogFactory singleton
+ *
+ *  LogFactory.getLogger()
+ *      If the a Logger type was specified in the configuration
+ *          Create a new Logger of that type
+ *      Otherwise
+ *          Create a ConsoleLogger
+ *      Pass the Logger instance to a new LoggingDecorator
+ *      Return the LoggingDecorator
+ *
  * @author Philip Ford
  */
 (function mLogFactory($) {
@@ -20,7 +33,7 @@
 
 
     var $config = $.config || {},                           // The log configuration
-        props = $config.log || {},                          // Log configuration properties
+        props = $config.logging || {},                      // Log configuration properties
         Logger,                                             // The logger instance
         symbolCommands,                                     // Supported symbols and handlers
         LOG_LEVELS = Object.freeze({                        // Supported log levels
@@ -128,35 +141,35 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
                 logger.logEvent = new LogEvent(arguments, LOG, msg);
-                logger.log(msg);
+                logger.log(logger.render());
             }
         },
         info: function INFO(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
                 logger.logEvent = new LogEvent(arguments, INFO, msg);
-                logger.info(msg);
+                logger.info(logger.render());
             }
         },
         error: function ERROR(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
                 logger.logEvent = new LogEvent(arguments, ERROR, msg);
-                logger.error(msg);
+                logger.error(logger.render());
             }
         },
         debug: function DEBUG(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
                 logger.logEvent = new LogEvent(arguments, DEBUG, msg);
-                logger.debug(msg);
+                logger.debug(logger.render());
             }
         },
         warn: function WARN(msg){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
                 logger.logEvent = new LogEvent(arguments, WARN, msg);
-                logger.warn(msg);
+                logger.warn(logger.render());
             }
         },
         /*
@@ -166,7 +179,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
                 logger.logEvent = new LogEvent(arguments, TRACE, msg);
-                logger.trace(msg);
+                logger.trace(logger.render());
             }
         },
         /*
@@ -176,7 +189,7 @@
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
                 logger.logEvent = new LogEvent(arguments, ASSERT, msg);
-                logger.assert(msg);
+                logger.assert(logger.render());
             }
         }
     };
@@ -187,12 +200,12 @@
     If a Logger object is assigned to $.config.logger, use that Logger;
     otherwise, use the default console logger.
      */
-    if ($config.logger){
-        Logger = $config.logger;
+    if (props){
+        Logger = props.logger;
     } else {
         function execute(that, op, msg){
             var c = console[op] ? $.proxy(console, op) : $.proxy(console, "log");
-            if (msg != null) c(that.render());
+            if (msg != null) c(msg);
         }
         /*
         The default ConsoleLogger

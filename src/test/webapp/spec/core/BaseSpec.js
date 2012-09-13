@@ -14,6 +14,18 @@ describe("MJS Core Functions", function(){
     });
 
 
+    it("The config property should not be deletable", function(){
+        "use strict"
+        try {
+            delete $.config;
+            this.fail("We should not reach this point.");
+        } catch(e){
+            expect($.config).toBeDefined();
+            expect(typeof $.config === 'object').toBeTruthy();
+        }
+    });
+
+
     describe("setDebugEnabled()", function(){
         var _log;
 
