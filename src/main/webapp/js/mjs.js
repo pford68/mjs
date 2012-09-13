@@ -224,10 +224,12 @@ var mjs = mjs || {};
             debugEnabled = enabled;
         },
 
-        log: function(msg, obj){
+        log: function(msg, varargs){
             if (debugEnabled && typeof console !== 'undefined'){
-                console.log(msg);
-                if (obj) console.dir(obj);
+                if ($.isString(msg)){
+                    !varargs ? console.log(msg) : console.log.apply(console, arguments);
+                }
+                else console.dir(msg);
             }
             return this;
         },

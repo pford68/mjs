@@ -1,8 +1,7 @@
 describe("MJS Core Functions", function(){
 
-    var $ = mjs, frameLoaded = false;
-
-
+    var $ = mjs;
+    $.require("mjs/testing/MockConsole");
 
     beforeEach(function(){
         $.setDebugEnabled(true);
@@ -26,21 +25,15 @@ describe("MJS Core Functions", function(){
     });
 
 
+
     describe("setDebugEnabled()", function(){
-        var _log;
 
         beforeEach(function(){
-            if (typeof console === 'undefined') {
-                console = {};
-            } else if (!_log){
-                _log = console.log;
-            }
-            $.extend(console, {
-               content:[],
-               log: function(msg){
-                   this.content.push(msg)
-               }
-            });
+            $.testing.MockConsole.start();
+        });
+
+        afterEach(function(){
+            $.testing.MockConsole.stop();
         });
 
         it("should allow console logging when the argument is 'true'", function(){
@@ -58,9 +51,6 @@ describe("MJS Core Functions", function(){
             expect($.isDebugEnabled()).toBeFalsy();
             $.log("B");
             expect(console.content.length).toEqual(0);
-
-            if (_log) console.log = _log;
-            console.log("console reset");
         });
     });
 
@@ -70,11 +60,22 @@ describe("MJS Core Functions", function(){
         it("should not throw an error when the console is closed", function(){
             $.setDebugEnabled(true);
             try {
-                $.log("Hello, from $.log!");
+                if (window.console) {
+                    var msg = "The console was not closed, not all log tests are valid.";
+                    console.log(msg);
+                    console.dir(console);
+                } else {
+                    $.log("Hello, from $.log!");
+                }
             } catch (e) {
-                fail("An exception should not have been thrown.");
+                this.fail("An exception should not have been thrown.");
             }
+        });
+        /* Not valid as a unit test:  can only be seen in the console.
+        it("should support string formatting", function(){
+            $.log("%s supports %s %s!", "$.log", "string", "formatting");
         })
+        */
     });
 
 
@@ -84,7 +85,7 @@ describe("MJS Core Functions", function(){
             $.setDebugEnabled(true);
             try {
                 $.error("Hello, from $.error!");
-                fail("We should not have reached this point.");
+                this.fail("We should not have reached this point.");
             } catch(e) {
                 $.log("$.error() passed.");
             }
