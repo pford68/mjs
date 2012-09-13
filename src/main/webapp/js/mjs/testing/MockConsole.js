@@ -14,7 +14,7 @@
                 content:[],
                 mock: true,
                 log: function(msg){
-                    this.content.push(msg)
+                    this.content.push(msg);
                 }
             };
         },
