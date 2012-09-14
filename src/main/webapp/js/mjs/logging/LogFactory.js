@@ -34,8 +34,7 @@
 
     var $config = $.config || {},                           // The log configuration
         props = $config.logging || {},                      // Log configuration properties
-        Logger,                                             // The logger instance
-        symbolCommands,                                     // Supported symbols and handlers
+        layoutCommands,                                     // Supported symbols and handlers
         LOG_LEVELS = Object.freeze({                        // Supported log levels
             ERROR: 1,
             WARN: 2,
@@ -52,14 +51,17 @@
     // Adding default log property values if those properties are not set.
     $.augment(props,{
         pattern: "%d [%M]%l............%m",
-        dateFormat: "yyyy-MM-dd HH:mm:ss.SSS"
+        dateFormat: "yyyy-MM-dd HH:mm:ss.SSS",
+        logger: getConsoleLogger()
     });
+    Object.implement(props.logger, ILogger);
+
 
     /*
-    Supported symbols and their handlers.  Theoretically, we could let developers add handlers for symbols,
-    or override existing ones, but that is not supported yet.  Supporting it, however, would be easy now.
-     */
-    symbolCommands = {
+   Supported Layout symbols and their handlers.  Theoretically, we could let developers add handlers for symbols,
+   or override existing ones, but that is not supported yet.  Supporting it, however, would be easy now.
+    */
+    layoutCommands = {
         JUSTIFY: {
             value: /%-[0-9]+/g,
             execute: function(format, logger){
@@ -137,129 +139,158 @@
         this.logger = Object.seal(logger);
     }
     LoggingDecorator.prototype = {
-        log: function LOG(msg){
+        log: function LOG(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
                 logger.logEvent = new LogEvent(arguments, LOG, msg);
-                logger.log(logger.render());
+                logger.log(this.format());
             }
+            return this;
         },
-        info: function INFO(msg){
+        info: function INFO(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
                 logger.logEvent = new LogEvent(arguments, INFO, msg);
-                logger.info(logger.render());
+                logger.info(this.format());
             }
+            return this;
         },
-        error: function ERROR(msg){
+        error: function ERROR(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
                 logger.logEvent = new LogEvent(arguments, ERROR, msg);
-                logger.error(logger.render());
+                logger.error(this.format());
             }
+            return this;
         },
-        debug: function DEBUG(msg){
+        debug: function DEBUG(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
                 logger.logEvent = new LogEvent(arguments, DEBUG, msg);
-                logger.debug(logger.render());
+                logger.debug(this.format());
             }
+            return this;
         },
-        warn: function WARN(msg){
+        warn: function WARN(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
                 logger.logEvent = new LogEvent(arguments, WARN, msg);
-                logger.warn(logger.render());
+                logger.warn(this.format());
             }
+            return this;
         },
         /*
         Trace is not required by ILogger interface.
          */
-        trace: function TRACE(msg){
+        trace: function TRACE(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
                 logger.logEvent = new LogEvent(arguments, TRACE, msg);
-                logger.trace(logger.render());
+                logger.trace(this.format());
             }
+            return this;
         },
         /*
          Assert is not required by ILogger interface.
          */
-        assert: function ASSERT(msg){
+        assert: function ASSERT(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
                 logger.logEvent = new LogEvent(arguments, ASSERT, msg);
-                logger.assert(logger.render());
+                logger.assert(this.format());
             }
+            return this;
+        },
+        dir: function DIR(that){
+            var logger = this.logger;
+            if ($.isDebugEnabled()){
+                /*
+                I thought about adding an automatic message using the configured format,
+                but it's probably better to let the use add an explicit log statement before
+                the explicit dir() call.
+                 */
+                //logger.logEvent = new LogEvent(arguments, DIR, "");
+                //logger.log(this.format());
+                logger.dir(that);
+            }
+        },
+        /**
+         *
+         * @return {String}
+         */
+        format: function(){
+            var format = props.pattern,
+                logger = this.logger;
+
+            // Handling objects, but letting the logger methods decide what to do.
+            if (!$.isString(logger.logEvent.message)){
+                return logger.logEvent.message;
+            }
+
+            // Replacing each symbol found in the pattern with the corresponding log event values
+            format = layoutCommands.JUSTIFY.execute(format, this.logger); /* JUSTIFY must come first, but the order
+             of iteration below is not guaranteed,
+             so I call it first. */
+            $.decorate(layoutCommands).forEach($.proxy(this, function(cmd, key){
+                if (key !== "JUSTIFY") format = cmd.execute(format, logger);
+            }));
+            return format;
         }
     };
 
 
+    function getConsoleLogger(){
 
-    /*
-    If a Logger object is assigned to $.config.logger, use that Logger;
-    otherwise, use the default console logger.
-     */
-    if (props){
-        Logger = props.logger;
-    } else {
-        function execute(that, op, msg){
-            var c = console[op] ? $.proxy(console, op) : $.proxy(console, "log");
-            if (msg != null) c(msg);
+        function validate(){
+            return $.notEmpty(window.console);
         }
-        /*
-        The default ConsoleLogger
-         */
-        Logger = {
+
+        return {
             log: function(msg){
-                if (window["console"]) execute(this, "log", msg);
+                if (validate()){
+                    console.log.apply(console, arguments);
+                }
             },
             info: function(msg){
-                if (window["console"]) execute(this, "info", msg);
+                if (validate()){
+                    console.info.apply(console, arguments);
+                }
             },
             debug: function(msg){
-                if (window["console"]) execute(this, "debug", msg);
+                if (validate()){
+                    console.debug.apply(console, arguments);
+                }
             },
             warn: function(msg){
-                if (window["console"]) execute(this, "warn", msg);
+                if (validate()){
+                    console.warn.apply(console, arguments);
+                }
             },
             error: function(msg){
-                if (window["console"]) execute(this, "error", msg);
+                if (validate()){
+                    console.error.apply(console, arguments);
+                }
             },
             trace: function(msg){
-                var c = window["console"];
-                if (c && c.trace) {
-                    execute(this, "log", msg);
-                    c.trace();
+                if (validate()){
+                    var trace = console.trace || console.log;
+                    trace.apply(console, arguments);
                 }
             },
             assert: function(expr){
-                if (window['console']) execute(this, "assert", expr);
+                if (validate()){
+                    console.assert.apply(console, arguments);
+                }
+            },
+            dir: function(that){
+                console.dir(that);
             }
         };
     }
 
 
 
-    /* Add the final render() method.  This method is not provided by Logger implementations.
-       The Logger is sealed when a LoggingDecorator is created, in LogFactory.getLogger(). */
-    Logger.render = function(){
-        var format = props.pattern;
-
-        // Replacing each symbol found in the pattern with the corresponding log event values
-        format = symbolCommands.JUSTIFY.execute(format, this); /* JUSTIFY must come first, but the order
-                                                                  of iteration below is not guaranteed,
-                                                                  so I call it first. */
-        $.decorate(symbolCommands).forEach($.proxy(this, function(cmd, key){
-            if (key !== "JUSTIFY") format = cmd.execute(format, this);
-        }));
-        return format;
-    };
-
-
-
     // Create the LogFactory singleton and set the Logger type produced by the factory.
-    Object.implement(Logger, ILogger);
     var LogFactory = $.getFactory({
         getLogger: function(that){
             /*
@@ -267,7 +298,7 @@
             we will want multiple loggers per page--different ones in
             different classes, modules, functions, etc.
             */
-            var loggerInstance = Object.create(Logger);
+            var loggerInstance = Object.create(props.logger);
             that = $.isString(that) ? { name: that } : that;
             /*
             Definitions of the properties listed below:
@@ -284,7 +315,7 @@
                 logLevel: null,
                 logEvent: null
             });
-            return Object.seal(new LoggingDecorator(loggerInstance));
+            return Object.freeze(new LoggingDecorator(loggerInstance));
         }
     }).build();
 

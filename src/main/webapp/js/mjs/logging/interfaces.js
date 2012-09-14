@@ -7,6 +7,21 @@
 
     var logging = $.logging;
 
-    logging.ILogger = $.Interface('info', 'error', 'debug', 'log', 'warn');
+    /**
+     *
+     * @type {*}
+     */
+    logging.ILogger = $.Interface(
+        'info',
+        'error',
+        'debug',
+        'log',
+        'warn',
+
+        /**
+         * Displays the contents of objects in the log output
+         */
+        "dir"
+    );
 
 })(mjs);
