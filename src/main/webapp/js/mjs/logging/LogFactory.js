@@ -26,6 +26,7 @@
 (function mLogFactory($) {
     $.require("mjs/core/strings");
     $.require("mjs/logging/interfaces");
+    $.require("mjs/logging/ConsoleLogger");
     $.require("mjs/core/ObjectFactory");
     $.require("mjs/core/ObjectDecorator");
     $.require("mjs/core/oop");
@@ -36,14 +37,16 @@
         props = $config.logging || {},                      // Log configuration properties
         layoutCommands,                                     // Supported symbols and handlers
         LOG_LEVELS = Object.freeze({                        // Supported log levels
-            ERROR: 1,
-            WARN: 2,
-            INFO: 3,
-            DEBUG: 4,
-            LOG: 5,
-            TRACE: 6,
-            ASSERT: 7
+            FATAL: 1,
+            ERROR: 2,
+            WARN: 3,
+            INFO: 4,
+            DEBUG: 5,
+            LOG: 6,
+            TRACE: 7,
+            ASSERT: 8
         }),
+        exceptionLayout = "{name}: {message}",
         DateFormat = $.util.DateFormat,                     // Short name for the DateFormat class
         logging = $.logging,                                // Short name for the logging namespace
         ILogger = logging.ILogger;                          // Short name for the ILogger interface.
@@ -52,7 +55,7 @@
     $.augment(props,{
         pattern: "%d [%M]%l............%m",
         dateFormat: "yyyy-MM-dd HH:mm:ss.SSS",
-        logger: getConsoleLogger()
+        logger: logging.ConsoleLogger
     });
     Object.implement(props.logger, ILogger);
 
@@ -102,6 +105,12 @@
             execute: function(format, logger){
                 return format.replace(this.value, DateFormat.format(logger.logEvent.datetime, props.dateFormat));
             }
+        },
+        NEWLINE: {
+            value: /%n/g,
+            execute: function(format, logger){
+                return format.replace(this.value, "\n");
+            }
         }
     };
 
@@ -127,6 +136,16 @@
 
 
 
+    function exception(e){
+        return $.notEmpty(e) ? exceptionLayout.applyTemplate({
+            name:e.name,
+            message:e.message,
+            lineNumber:e.lineNumber
+        }) : e;
+    }
+
+
+
     /*
      If someone wants to use a different logger implementation, he/she need only provide the code
      he/she is interested in, and this decorator will wrap it within excise code.  That excise code
@@ -139,61 +158,61 @@
         this.logger = Object.seal(logger);
     }
     LoggingDecorator.prototype = {
-        log: function LOG(msg, varargs){
+        log: function LOG(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
                 logger.logEvent = new LogEvent(arguments, LOG, msg);
-                logger.log(this.format());
+                logger.log(this.format(), exception(e));
             }
             return this;
         },
-        info: function INFO(msg, varargs){
+        info: function INFO(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
                 logger.logEvent = new LogEvent(arguments, INFO, msg);
-                logger.info(this.format());
+                logger.info(this.format(), exception(e));
             }
             return this;
         },
-        error: function ERROR(msg, varargs){
+        error: function ERROR(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
                 logger.logEvent = new LogEvent(arguments, ERROR, msg);
-                logger.error(this.format());
+                logger.error(this.format(), exception(e));
             }
             return this;
         },
-        debug: function DEBUG(msg, varargs){
+        debug: function DEBUG(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
                 logger.logEvent = new LogEvent(arguments, DEBUG, msg);
-                logger.debug(this.format());
+                logger.debug(this.format(), exception(e));
             }
             return this;
         },
-        warn: function WARN(msg, varargs){
+        warn: function WARN(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
                 logger.logEvent = new LogEvent(arguments, WARN, msg);
-                logger.warn(this.format());
+                logger.warn(this.format(), exception(e));
             }
             return this;
         },
         /*
         Trace is not required by ILogger interface.
          */
-        trace: function TRACE(msg, varargs){
+        trace: function TRACE(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
                 logger.logEvent = new LogEvent(arguments, TRACE, msg);
-                logger.trace(this.format());
+                logger.trace(this.format(), exception(e));
             }
             return this;
         },
         /*
          Assert is not required by ILogger interface.
          */
-        assert: function ASSERT(msg, varargs){
+        assert: function ASSERT(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
                 logger.logEvent = new LogEvent(arguments, ASSERT, msg);
@@ -239,54 +258,7 @@
     };
 
 
-    function getConsoleLogger(){
 
-        function validate(){
-            return $.notEmpty(window.console);
-        }
-
-        return {
-            log: function(msg){
-                if (validate()){
-                    console.log.apply(console, arguments);
-                }
-            },
-            info: function(msg){
-                if (validate()){
-                    console.info.apply(console, arguments);
-                }
-            },
-            debug: function(msg){
-                if (validate()){
-                    console.debug.apply(console, arguments);
-                }
-            },
-            warn: function(msg){
-                if (validate()){
-                    console.warn.apply(console, arguments);
-                }
-            },
-            error: function(msg){
-                if (validate()){
-                    console.error.apply(console, arguments);
-                }
-            },
-            trace: function(msg){
-                if (validate()){
-                    var trace = console.trace || console.log;
-                    trace.apply(console, arguments);
-                }
-            },
-            assert: function(expr){
-                if (validate()){
-                    console.assert.apply(console, arguments);
-                }
-            },
-            dir: function(that){
-                console.dir(that);
-            }
-        };
-    }
 
 
 
@@ -320,6 +292,5 @@
     }).build();
 
     $.extend($.logging, { LogFactory: LogFactory });
-
 
 })(mjs);

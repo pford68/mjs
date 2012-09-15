@@ -42,7 +42,7 @@ Catastrophe.prototype = new Error();
 
     $.config.logging = {
         //logger: AlertLogger,
-        pattern: "%d [%M] %p%-5l - %m",
+        pattern: "%d [%M] %p%-5l - %m%n",
         //pattern: "[%M]%l............%m",
         dateFormat: 'yyyy/MM/dd HH:mm:ss.SSS',
         firstModule: "INFO",
@@ -86,7 +86,7 @@ Catastrophe.prototype = new Error();
         //Object.finalizes({}, $.logging.ILogger);
         $.addAdvice("Huh?").before(test)
     } catch(e){
-        Logger.error(e.name + ":  " + e.message);
+        Logger.error("An exception occurred:  ", e);
     }
 
     test();
