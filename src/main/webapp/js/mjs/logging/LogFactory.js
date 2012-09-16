@@ -46,7 +46,6 @@
             TRACE: 7,
             ASSERT: 8
         }),
-        exceptionLayout = "{name}: {message}",
         DateFormat = $.util.DateFormat,                     // Short name for the DateFormat class
         logging = $.logging,                                // Short name for the logging namespace
         ILogger = logging.ILogger;                          // Short name for the ILogger interface.
@@ -58,6 +57,7 @@
         logger: logging.ConsoleLogger
     });
     Object.implement(props.logger, ILogger);
+
 
 
     /*
@@ -115,11 +115,30 @@
     };
 
 
+
+    // Error is not working with String.prototype.applyTemplate()
+    function Exception(e){
+        if ($.notEmpty(e)){
+            this.name = e.name;
+            this.message = e.message;
+            this.lineNumber = e.lineNumber;
+            this.fileName = e.fileName;
+            this.stack = e.stack;
+        }
+    }
+
+
     function LogEvent(context, caller, message){
         this.name = caller.name;
         this.location = caller.caller ? caller.caller.name : context.callee.caller.name;
         this.datetime = new Date();
         this.message = message;
+        this.data = null;
+        if (!$.isString(message)){
+            this.message = "";
+            this.data = message;
+        }
+
     }
 
 
@@ -132,16 +151,6 @@
             logger.logLevel = level;
         }
         return logger.logLevel;
-    }
-
-
-
-    function exception(e){
-        return $.notEmpty(e) ? exceptionLayout.applyTemplate({
-            name:e.name,
-            message:e.message,
-            lineNumber:e.lineNumber
-        }) : e;
     }
 
 
@@ -161,40 +170,40 @@
         log: function LOG(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
-                logger.logEvent = new LogEvent(arguments, LOG, msg);
-                logger.log(this.format(), exception(e));
+                var logEvent = logger.logEvent = new LogEvent(arguments, LOG, msg);
+                logger.log(this.format(), new Exception(e), logEvent.data);
             }
             return this;
         },
         info: function INFO(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
-                logger.logEvent = new LogEvent(arguments, INFO, msg);
-                logger.info(this.format(), exception(e));
+                var logEvent = logger.logEvent = new LogEvent(arguments, INFO, msg);
+                logger.info(this.format(), new Exception(e), logEvent.data);
             }
             return this;
         },
         error: function ERROR(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
-                logger.logEvent = new LogEvent(arguments, ERROR, msg);
-                logger.error(this.format(), exception(e));
+                var logEvent = logger.logEvent = new LogEvent(arguments, ERROR, msg);
+                logger.error(this.format(), new Exception(e), logEvent.data);
             }
             return this;
         },
         debug: function DEBUG(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
-                logger.logEvent = new LogEvent(arguments, DEBUG, msg);
-                logger.debug(this.format(), exception(e));
+                var logEvent = logger.logEvent = new LogEvent(arguments, DEBUG, msg);
+                logger.debug(this.format(), new Exception(e), logEvent.data);
             }
             return this;
         },
         warn: function WARN(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
-                logger.logEvent = new LogEvent(arguments, WARN, msg);
-                logger.warn(this.format(), exception(e));
+                var logEvent = logger.logEvent = new LogEvent(arguments, WARN, msg);
+                logger.warn(this.format(), new Exception(e), logEvent.data);
             }
             return this;
         },
@@ -204,8 +213,8 @@
         trace: function TRACE(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
-                logger.logEvent = new LogEvent(arguments, TRACE, msg);
-                logger.trace(this.format(), exception(e));
+                var logEvent = logger.logEvent = new LogEvent(arguments, TRACE, msg);
+                logger.trace(this.format(), new Exception(e), logEvent.data);
             }
             return this;
         },
@@ -215,7 +224,7 @@
         assert: function ASSERT(msg, e){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
-                logger.logEvent = new LogEvent(arguments, ASSERT, msg);
+                var logEvent = logger.logEvent = new LogEvent(arguments, ASSERT, msg);
                 logger.assert(this.format());
             }
             return this;
@@ -240,11 +249,6 @@
         format: function(){
             var format = props.pattern,
                 logger = this.logger;
-
-            // Handling objects, but letting the logger methods decide what to do.
-            if (!$.isString(logger.logEvent.message)){
-                return logger.logEvent.message;
-            }
 
             // Replacing each symbol found in the pattern with the corresponding log event values
             format = layoutCommands.JUSTIFY.execute(format, this.logger); /* JUSTIFY must come first, but the order

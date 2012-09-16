@@ -226,10 +226,7 @@ var mjs = mjs || {};
 
         log: function(msg, varargs){
             if (debugEnabled && typeof console !== 'undefined'){
-                if ($.isString(msg)){
-                    !varargs ? console.log(msg) : console.log.apply(console, arguments);
-                }
-                else console.dir(msg);
+                !varargs ? console.log(msg) : console.log.apply(console, arguments);
             }
             return this;
         },

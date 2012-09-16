@@ -73,7 +73,7 @@ Catastrophe.prototype = new Error();
     var Logger = $.logging.LogFactory.getLogger("PretendClass");
     Logger.assert(false);
     Logger.log("log statement");
-    Logger.debug("debug statement");
+    Logger.debug({ name: "What the ...?", constructor: function WhoDat(){}});
     Logger.info("info statement");
     Logger.warn("warning");
 
