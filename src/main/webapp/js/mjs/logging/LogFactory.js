@@ -25,6 +25,7 @@
  */
 (function mLogFactory($) {
     $.require("mjs/core/strings");
+    $.require("mjs/core/arrays");
     $.require("mjs/logging/interfaces");
     $.require("mjs/logging/ConsoleLogger");
     $.require("mjs/core/ObjectFactory");
@@ -155,6 +156,25 @@
 
 
 
+    function fixArguments(that, args){
+        var logEvent = that.logger.logEvent;
+        args = $.from(args);
+        args.shift();
+        if (logEvent.data){
+            args = [that.format(), logEvent.data].concat(args);
+        } else {
+            args = [that.format()].concat(args);
+        }
+        var last = args.last();
+        if (last instanceof Error){
+            args.pop();
+            args.push(new Exception(last));
+        }
+        return args;
+    }
+
+
+
     /*
      If someone wants to use a different logger implementation, he/she need only provide the code
      he/she is interested in, and this decorator will wrap it within excise code.  That excise code
@@ -167,64 +187,64 @@
         this.logger = Object.seal(logger);
     }
     LoggingDecorator.prototype = {
-        log: function LOG(msg, e){
+        log: function LOG(msg, e, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
-                var logEvent = logger.logEvent = new LogEvent(arguments, LOG, msg);
-                logger.log(this.format(), new Exception(e), logEvent.data);
+                logger.logEvent = new LogEvent(arguments, LOG, msg);
+                logger.log.apply(logger, fixArguments(this, arguments));
             }
             return this;
         },
-        info: function INFO(msg, e){
+        info: function INFO(msg, e, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.INFO) {
-                var logEvent = logger.logEvent = new LogEvent(arguments, INFO, msg);
-                logger.info(this.format(), new Exception(e), logEvent.data);
+                logger.logEvent = new LogEvent(arguments, INFO, msg);
+                logger.info.apply(logger, fixArguments(this, arguments));
             }
             return this;
         },
-        error: function ERROR(msg, e){
+        error: function ERROR(msg, e, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ERROR){
-                var logEvent = logger.logEvent = new LogEvent(arguments, ERROR, msg);
-                logger.error(this.format(), new Exception(e), logEvent.data);
+                logger.logEvent = new LogEvent(arguments, ERROR, msg);
+                logger.error.apply(logger, fixArguments(this, arguments));
             }
             return this;
         },
-        debug: function DEBUG(msg, e){
+        debug: function DEBUG(msg, e, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.DEBUG) {
-                var logEvent = logger.logEvent = new LogEvent(arguments, DEBUG, msg);
-                logger.debug(this.format(), new Exception(e), logEvent.data);
+                logger.logEvent = new LogEvent(arguments, DEBUG, msg);
+                logger.debug.apply(logger, fixArguments(this, arguments));
             }
             return this;
         },
-        warn: function WARN(msg, e){
-            var logger = this.logger;
+        warn: function WARN(msg, e, varargs){
+            var logger = this.logger, logEvent, args;
             if (getLogLevel(logger) >= LOG_LEVELS.WARN) {
-                var logEvent = logger.logEvent = new LogEvent(arguments, WARN, msg);
-                logger.warn(this.format(), new Exception(e), logEvent.data);
+                logger.logEvent = new LogEvent(arguments, WARN, msg);
+                logger.warn.apply(logger, fixArguments(this, arguments));
             }
             return this;
         },
         /*
         Trace is not required by ILogger interface.
          */
-        trace: function TRACE(msg, e){
+        trace: function TRACE(msg, e, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.TRACE && $.isFunction(logger.trace)) {
-                var logEvent = logger.logEvent = new LogEvent(arguments, TRACE, msg);
-                logger.trace(this.format(), new Exception(e), logEvent.data);
+                logger.logEvent = new LogEvent(arguments, TRACE, msg);
+                logger.trace.apply(logger, fixArguments(this, arguments));
             }
             return this;
         },
         /*
          Assert is not required by ILogger interface.
          */
-        assert: function ASSERT(msg, e){
+        assert: function ASSERT(msg, e, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.ASSERT && $.isFunction(logger.assert)) {
-                var logEvent = logger.logEvent = new LogEvent(arguments, ASSERT, msg);
+                logger.logEvent = new LogEvent(arguments, ASSERT, msg);
                 logger.assert(this.format());
             }
             return this;

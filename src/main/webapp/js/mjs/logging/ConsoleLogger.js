@@ -1,14 +1,13 @@
 (function ($) {
 
+    $.require("mjs/core/arrays");
 
-    function execute(op, msg, e, data){
+    function execute(op, msg, varargs){
         if (window.console){
-            var args = [msg];
-            if (data){
-                args.push(data);
-            }
-            if (e && e.stack){
-                args.push(e.stack);
+            var args = $.from(arguments);
+            var last = args.last();
+            if (last.stack){
+                args[args.length - 1] = last.stack;
             }
             console[op].apply(console, args);
         }
