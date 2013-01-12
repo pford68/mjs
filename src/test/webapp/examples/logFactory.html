@@ -25,35 +25,13 @@ Catastrophe.prototype = new Error();
 (function loader($){
     $.require("mjs/logging/interfaces");
     $.require("mjs/core/aop");
-
-
-    var AlertLogger = {
-        log: function(msg){
-            alert(msg);
-        },
-        dir: function(that){
-            alert(JSON.stringify(that));
-        }
-    };
-    ['info','warn','debug','error'].forEach(function(item){
-        AlertLogger[item] = function(msg){ this.log(msg); }
-    });
-
-
-    $.config.logging = {
-        //logger: AlertLogger,
-        pattern: "%d [%M] %p%-5l - %m%n",
-        //pattern: "[%M]%l............%m",
-        dateFormat: 'yyyy/MM/dd HH:mm:ss.SSS',
-        firstModule: "INFO",
-        PretendClass: "LOG"
-    };
-
     $.require("mjs/logging/LogFactory");
+    $.require("examples/logProperties");
 })(mjs);
 
 
 (function($){
+    //console.log("%c Test styling", 'color: #bada55; font:italic bold 12px/30px Georgia, serif;');
     var Logger = $.logging.LogFactory.getLogger("firstModule");
     Logger.log("Log statement");
 
