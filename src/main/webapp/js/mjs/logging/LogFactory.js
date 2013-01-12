@@ -27,7 +27,7 @@
     $.require("mjs/core/strings");
     $.require("mjs/core/arrays");
     $.require("mjs/logging/interfaces");
-    $.require("mjs/logging/ConsoleLogger");
+    //$.require("mjs/logging/ConsoleLogger");
     $.require("mjs/core/ObjectFactory");
     $.require("mjs/core/ObjectDecorator");
     $.require("mjs/core/oop");
@@ -35,7 +35,7 @@
 
 
     var $config = $.config || {},                           // The log configuration
-        props = $config.logging || {},                      // Log configuration properties
+        props,                                              // Log configuration properties
         layoutCommands,                                     // Supported symbols and handlers
         LOG_LEVELS = Object.freeze({                        // Supported log levels
             FATAL: 1,
@@ -51,15 +51,32 @@
         logging = $.logging,                                // Short name for the logging namespace
         ILogger = logging.ILogger;                          // Short name for the ILogger interface.
 
-    // Adding default log property values if those properties are not set.
-    $.augment(props,{
-        pattern: "%d [%M]%l............%m",
-        dateFormat: "yyyy-MM-dd HH:mm:ss.SSS",
-        logger: logging.ConsoleLogger
-    });
-    Object.implement(props.logger, ILogger);
 
+    function onModuleLoaded(logger){
+        $.config.logging.logger = logger;
+    }
 
+    /*
+    Gets either the current value of $.config.log or the default properties if the former don't exist.
+    This function allows use to set the properties after this file has been loaded.
+     */
+    function getProperties(){
+        if (!props){
+            // Adding default log property values if those properties are not set.
+            props = $config.logging || {};
+            if (props.logger && $.isString(props.logger)){
+                $.require(props.logger, { onload: onModuleLoaded });
+            } else if (!props.logger){
+                $.require("mjs/logging/ConsoleLogger", { onload: onModuleLoaded });
+            }
+            $.augment(props,{
+                pattern: "%d [%M]%l............%m",
+                dateFormat: "yyyy-MM-dd HH:mm:ss.SSS"
+            });
+            Object.implement(props.logger, ILogger);
+        }
+        return props;
+    }
 
     /*
    Supported Layout symbols and their handlers.  Theoretically, we could let developers add handlers for symbols,
@@ -104,7 +121,7 @@
         DATETIME: {
             value: /%d/g,
             execute: function(format, logger){
-                return format.replace(this.value, DateFormat.format(logger.logEvent.datetime, props.dateFormat));
+                return format.replace(this.value, DateFormat.format(logger.logEvent.datetime, getProperties().dateFormat));
             }
         },
         NEWLINE: {
@@ -145,7 +162,7 @@
 
     function getLogLevel(logger){
         if (!logger.logLevel){
-            var level = -1, prop = props[logger.subject];
+            var level = -1, prop = getProperties()[logger.subject];
             if (prop) {
                 level = LOG_LEVELS[prop.toUpperCase()] || -1;
             }
@@ -267,7 +284,7 @@
          * @return {String}
          */
         format: function(){
-            var format = props.pattern,
+            var format = getProperties().pattern,
                 logger = this.logger;
 
             // Replacing each symbol found in the pattern with the corresponding log event values
@@ -294,7 +311,7 @@
             we will want multiple loggers per page--different ones in
             different classes, modules, functions, etc.
             */
-            var loggerInstance = Object.create(props.logger);
+            var loggerInstance = Object.create(getProperties().logger);
             that = $.isString(that) ? { name: that } : that;
             /*
             Definitions of the properties listed below:
