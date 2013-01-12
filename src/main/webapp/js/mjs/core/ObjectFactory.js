@@ -27,9 +27,7 @@
     /**
      * <p>Returns a factory for creating objects according to the specified blueprint and configuration.
      * Once a blueprint is set for a Factory, changes to that blueprint will have no impact on
-     * subsequent objects based on that blueprint:  the blueprint is cloned internally within
-     * getFactory(), and the clone is used as the blueprint for new objects. </p>
-     *
+     * subsequent objects based on that blueprint.</p>
      *
      * <p>Regarding the blueprint, property names that begin with underscores will be made
      * private.  That means that they will be inaccessible outside of methods declared in
@@ -37,7 +35,7 @@
      * will still have access to the private properties declared in the parent factory's blueprint.
      * </p>
      *
-     * <p>Regarding the config, it must follow the same form as the config expected by Object.defineProperties().
+     * <p>The config parameter must follow the same form as the config expected by Object.defineProperties().
      * If the configuration for a property declares both either a get() or a set() on the one hand, and sets
      * "writable" as well, then "writable" will be deleted from the configuration for that property:  get/set
      * and writable are incompatible and using both in a property configuration will cause Object.defineProperties()
@@ -117,6 +115,8 @@
                 above.
 
                 Update: I have since reverted to cloning the blueprint above, instead of freezing it.
+
+                Q: Why not use $.extend() below instead of Object.create()?  Is it because Object.create() is faster?
                  */
                 return args ? $.extend(Object.create(blueprint), args) : Object.create(blueprint);
             },
