@@ -167,13 +167,13 @@ var mjs = mjs || {};
         }
     };
 
-    function fetchResource(resource, module, suppress) {
-
+    function fetchResource(resource, module, options) {
+        options = options || {};
         $http.request({
             method: "GET",
             async: false,
             url: resource,
-            suppress: suppress,
+            suppress: options.suppress || false,
             success: function(response) {
                 if ($lm[module]) return;      // PF (2011/06/02):  Preventing duplicate evals.  Why they occur is unknown.
                 $lm[module] = resource;       // PF (2012/07/24):  Between these first two lines is an opportunity for a module to be executed twice.
@@ -186,12 +186,15 @@ var mjs = mjs || {};
                     helps with logging, among other things.
                 */
                 (function loader($){
-                    var mjs = $;
+                    var mjs = $, result;
                     if (!startsWith(module, "../")) {
                         $.module(module);
                     }
 
-                    eval(response.responseText);
+                    result = eval(response.responseText);
+                    if ($public.isFunction(options.onload)){
+                        options.onload(result);
+                    }
                 })(mjs);
                 //eval(response.responseText);
             },
@@ -350,12 +353,13 @@ var mjs = mjs || {};
          * <p>Supports wildcard syntax:  i.e., common/ux/*.</p>
          *
          * @param n The path, relative to the script root, of the file to load.
+         * @param options
          */
-        require: function(n) {
+        require: function(n, options) {
             n = n.replace(/\*$/, "__package__"); // 2010-07-21
             if (!$lm[n]) {
                 var resource = parsePath(n);
-                fetchResource(resource, n);
+                fetchResource(resource, n, options);
             }
         },
 
@@ -364,9 +368,10 @@ var mjs = mjs || {};
          * Calls $.require() if only test is true.
          * @param n
          * @param test
+         * @param options
          */
-        requireIf: function(n, test) {
-            if (test) $.require(n);
+        requireIf: function(n, test, options) {
+            if (test) $.require(n, options);
         },
 
 
