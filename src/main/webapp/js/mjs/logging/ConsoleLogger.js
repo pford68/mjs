@@ -41,4 +41,6 @@
         }
     };
 
+    return $.logging.ConsoleLogger;
+
 })(mjs);
