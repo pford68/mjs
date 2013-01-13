@@ -26,7 +26,7 @@ Catastrophe.prototype = new Error();
 
 
 (function($){
-    //console.log("%c Test styling", 'color: #bada55; font:italic bold 12px/30px Georgia, serif;');
+    //console.log("%cTest styling", 'color: #bada55; font:italic bold 12px/30px Georgia, serif;');
     var Logger = $.logging.LogFactory.getLogger("firstModule");
     Logger.log("Log statement");
 
@@ -35,7 +35,7 @@ Catastrophe.prototype = new Error();
     }
     getInfo();
     Logger.dir($.logging);
-    Logger.debug("debug statement");
+    Logger.debug("%cdebug statement", "background:green; color:yellow");
     Logger.warn("warning");
     Logger.error("error statement");
     Logger.trace("Tracing...");
