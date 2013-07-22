@@ -61,6 +61,16 @@
          */
         remove: function(node) {
             document.body.removeChild(node);
+        },
+
+        /**
+         * Inserts a new node after an existing node in the DOM.
+         *
+         * @param node The existing node after which the new node be inserted
+         * @param newNode The node to insert
+         */
+        insertAfter: function(node, newNode){
+            node.parentNode.insertBefore(newNode, node.nextSibling);
         }
     };
 
