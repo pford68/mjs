@@ -118,7 +118,7 @@
      *      Otherwise
      *          Create a ConsoleLogger
      *      Pass the Logger instance to a new LoggingDecorator
-     *      Return the LoggingFacade
+     *      Return the LoggingDecorator
      */
     $.require("mjs/core/strings");
     $.require("mjs/core/arrays");
