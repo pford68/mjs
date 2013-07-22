@@ -117,7 +117,7 @@
      *          Create a new Logger of that type
      *      Otherwise
      *          Create a ConsoleLogger
-     *      Pass the Logger instance to a new LoggingFacade
+     *      Pass the Logger instance to a new LoggingDecorator
      *      Return the LoggingFacade
      */
     $.require("mjs/core/strings");
@@ -292,16 +292,16 @@
 
     /*
      If someone wants to use a different logger implementation, he/she need only provide the code
-     he/she is interested in, and this facade will wrap it within excise code.  That excise code
+     he/she is interested in, and this decorator will wrap it within excise code.  That excise code
      checks the log configuration to determine whether the invoked Logger command is enabled for the
      Logger instance's class/function/module.  The excise code currently also injects the log event
      name, the date/time of the log event, and the name (if any) of the calling function, but those
      points may change.
 
-     Note that I leave styling up to the ILogger implementations.  You can argue that the LoggingFacade
+     Note that I leave styling up to the ILogger implementations.  You can argue that the LoggingDecorator
      should remove that burden, in order to make implementing ILogger easier, but some log destinations
      will not support styles (text files, server consoles, alerts), and the implementations that
-     use those destinations need to handle messages that contain style information.  The LoggingFacade
+     use those destinations need to handle messages that contain style information.  The LoggingDecorator
      will be oblivious to the nature of the destination, unless the ILogger provides that information,
      which still gives the implementation one more thing to do.  Also, some destinations, like the
      browser console will handle style information automatically.
@@ -309,10 +309,10 @@
      On a separate point, we may or may not want to set styles for entire log levels, but we would
      still want to set them on a statement-by-statement basis as well.
      */
-    function LoggingFacade(logger){
+    function LoggingDecorator(logger){
         this.logger = Object.seal(logger);
     }
-    LoggingFacade.prototype = {
+    LoggingDecorator.prototype = {
         log: function LOG(msg, varargs){
             var logger = this.logger;
             if (getLogLevel(logger) >= LOG_LEVELS.LOG){
@@ -440,7 +440,7 @@
                 logLevel: null,
                 logEvent: null
             });
-            return Object.freeze(new LoggingFacade(loggerInstance));
+            return Object.freeze(new LoggingDecorator(loggerInstance));
         }
     }).build();
 
