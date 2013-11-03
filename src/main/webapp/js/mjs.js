@@ -59,21 +59,27 @@ var mjs = mjs || {};
          TODO:  consider relying on configuration properties (passed in $) to point to the JS src directory.
          NOTE: (2012/07/19) I am considering a "data-jsdir" attribute for script tags that would point me to the js root.
          */
-        for (var i = 0, len = scripts.length; i < len; i++) {
-            var script = scripts[i];
-            if (lib = script.getAttribute("data-jspath")){
-                modulePrefixes['mjs'] = lib;
-            }/* else if (script.src.search(/mjs.*\.js/) != -1) {
-                var context, src = script.getAttribute("src");
-                context = src.replace(/js.*\.js$/, "");
-                modulePrefixes['mjs'] = lib = context + "js";
-            } */
-            if (modulePrefixes['mjs']) {
-                readAttributes(script);
-                break;
+        $.config = $.config || {};
+
+        lib = $.config.baseUrl;
+        if (!lib){
+            for (var i = 0, len = scripts.length; i < len; i++) {
+                var script = scripts[i];
+                if (lib = script.getAttribute("data-jspath")){
+                    modulePrefixes['mjs'] = lib;
+                }/* else if (script.src.search(/mjs.*\.js/) != -1) {
+                    var context, src = script.getAttribute("src");
+                    context = src.replace(/js.*\.js$/, "");
+                    modulePrefixes['mjs'] = lib = context + "js";
+                } */
+                if (modulePrefixes['mjs']) {
+                    readAttributes(script);
+                    break;
+                }
             }
         }
-        if (!lib) {
+
+        if (!lib && !$.config.amd) {
             var fatal = [
                 "The script root could not be determined:  ",
                 "either the mjs script must have a name in the format /mjs\.*.js/, or ",
@@ -83,7 +89,6 @@ var mjs = mjs || {};
             throw new Error(fatal.join(""));
         }
 
-        $.config = $.config || {};
         Object.defineProperty($, "config", {
             configurable: false,
             writable: true,
@@ -702,9 +707,11 @@ var mjs = mjs || {};
      I think importing "polyfills," and using certain functions that should be present (or even that aren't standard
       but are added to native prototypes) is not unjustified, but minimize this file's dependencies from now on.
       */
-    $public.require("mjs/core/shim");
-    $public.require("mjs/core/strings");
-    $public.require("mjs/i18n/" + $config.locale);
+    if (!$.config.amd){
+        $public.require("mjs/core/shim");
+        $public.require("mjs/core/strings");
+        $public.require("mjs/i18n/" + $config.locale);
+    }
     // TODO:  Prevent core modules from depending on modules in other packages.
 
 })(mjs);
