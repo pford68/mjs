@@ -62,6 +62,8 @@ var mjs = mjs || {};
         $.config = $.config || {};
 
         lib = $.config.baseUrl;
+        debugEnabled = $.config.debug || false;
+
         if (!lib){
             for (var i = 0, len = scripts.length; i < len; i++) {
                 var script = scripts[i];
