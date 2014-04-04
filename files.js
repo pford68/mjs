@@ -3,5 +3,5 @@
  * than profiles as well (theoretically).
  */
 files = [
-    "profiles/mjs-core.js"
+    "profiles/mjs-core-with-logging.js"
 ];
